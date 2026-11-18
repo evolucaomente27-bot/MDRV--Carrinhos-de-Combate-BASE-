@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#090d16">
+<title>Controle micro:bit V2 - Combate Celular</title>
+<style>
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: none;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+
+  body {
+    background: #090d16;
+    color: #f1f5f9;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Header */
+  .top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 18px;
+    background: rgba(15, 23, 42, 0.95);
+    border-bottom: 1px solid #1e293b;
+    z-index: 10;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+  }
+  .brand span { color: #06b6d4; }
+  
+  .status-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    background: #1e293b;
+    color: #94a3b8;
+    border: 1px solid #334155;
+    transition: all 0.3s;
+  }
+  .status-badge.connected {
+    background: rgba(16, 185, 129, 0.15);
+    color: #10b981;
+    border-color: #10b981;
+  }
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #ef4444;
+  }
+  .status-badge.connected .status-dot {
+    background: #10b981;
+    box-shadow: 0 0 8px #10b981;
+  }
+
+  .btn-connect {
+    background: #06b6d4;
+    color: #042f2e;
+    border: none;
+    padding: 7px 16px;
+    border-radius: 8px;
+    font-weight: 800;
+    font-size: 12px;
+    cursor: pointer;
+    box-shadow: 0 2px 10px rgba(6, 182, 212, 0.3);
+    transition: transform 0.1s, background 0.2s;
+  }
+  .btn-connect:active { transform: scale(0.95); }
+  .btn-connect.connected {
+    background: #dc2626;
+    color: #fff;
+    box-shadow: 0 2px 10px rgba(220, 38, 38, 0.3);
+  }
+
+  /* Telemetria Compacta */
+  .telemetry-strip {
+    display: flex;
+    justify-content: space-around;
+    padding: 6px 16px;
+    background: #0b1120;
+    border-bottom: 1px solid #1e293b;
+    font-size: 11px;
+    font-weight: 700;
+    color: #64748b;
+  }
+  .telemetry-val { color: #38bdf8; }
+
+  /* Área Principal de Controle */
+  .arena-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 24px;
+    position: relative;
+    gap: 20px;
+  }
+
+  @media (max-width: 600px) {
+    .arena-panel {
+      flex-direction: column;
+      justify-content: space-around;
+      padding: 10px;
+    }
+  }
+
+  /* Joystick Virtual */
+  .joystick-zone {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .joystick-base {
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, #1e293b 0%, #0f172a 80%);
+    border: 2px solid #334155;
+    border-radius: 50%;
+    position: relative;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5), inset 0 0 15px rgba(0,0,0,0.4);
+    touch-action: none;
+  }
+  .joystick-thumb {
+    width: 74px;
+    height: 74px;
+    background: radial-gradient(circle, #38bdf8 0%, #0284c7 100%);
+    border: 3px solid #e0f2fe;
+    border-radius: 50%;
+    position: absolute;
+    top: calc(50% - 37px);
+    left: calc(50% - 37px);
+    box-shadow: 0 4px 14px rgba(2, 132, 199, 0.5);
+    pointer-events: none;
+    transition: transform 0.05s ease-out;
+  }
+  .joystick-label {
+    margin-top: 8px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  /* Painel Tático de Botões */
+  .tactical-zone {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 220px;
+    max-width: 100%;
+  }
+
+  .btn-tactical {
+    background: #1e293b;
+    border: 1px solid #334155;
+    color: #f8fafc;
+    padding: 14px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: transform 0.1s, background 0.2s;
+  }
+  .btn-tactical:active { transform: scale(0.96); }
+
+  .btn-turbo {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    color: #0f172a;
+    border: none;
+    font-size: 14px;
+  }
+  .btn-t180 {
+    background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+    color: #fff;
+    border: none;
+  }
+  .btn-weapon {
+    background: #1e293b;
+    border: 2px solid #ef4444;
+    color: #f87171;
+  }
+  .btn-weapon.active {
+    background: #ef4444;
+    color: #fff;
+    box-shadow: 0 0 16px rgba(239, 68, 68, 0.6);
+  }
+
+  .btn-stop {
+    background: #0f172a;
+    border: 2px solid #ef4444;
+    color: #ef4444;
+    padding: 8px;
+    font-size: 11px;
+    font-weight: 800;
+    border-radius: 8px;
+    cursor: pointer;
+    text-transform: uppercase;
+  }
+  .btn-stop:active { background: #ef4444; color: #fff; }
+
+  /* Sliders de Velocidade */
+  .slider-box {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    background: rgba(15, 23, 42, 0.6);
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid #1e293b;
+  }
+  .slider-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    font-weight: 700;
+    color: #94a3b8;
+  }
+  input[type=range] {
+    width: 100%;
+    accent-color: #06b6d4;
+  }
+</style>
+</head>
+<body>
+
+  <!-- Top Bar -->
+  <div class="top-bar">
+    <div class="brand">
+      <span>🤖</span> micro:bit V2 <span>BLE</span>
+    </div>
+    <div class="status-badge" id="statusBadge">
+      <div class="status-dot"></div>
+      <span id="statusText">Desconectado</span>
+    </div>
+    <button class="btn-connect" id="btnConnect" onclick="toggleConnect()">CONECTAR</button>
+  </div>
+
+  <!-- Telemetria -->
+  <div class="telemetry-strip">
+    <div>MOTOR L: <span class="telemetry-val" id="valL">0%</span></div>
+    <div>MOTOR R: <span class="telemetry-val" id="valR">0%</span></div>
+    <div>TX: <span class="telemetry-val" id="valPackets">0</span> pkt/s</div>
+  </div>
+
+  <!-- Arena de Controle -->
+  <div class="arena-panel">
+
+    <!-- Joystick 360° -->
+    <div class="joystick-zone">
+      <div class="joystick-base" id="joystickBase">
+        <div class="joystick-thumb" id="joystickThumb"></div>
+      </div>
+      <div class="joystick-label">Joystick Analógico 360°</div>
+    </div>
+
+    <!-- Painel de Ações Táticas -->
+    <div class="tactical-zone">
+      <!-- Limitador de Velocidade -->
+      <div class="slider-box">
+        <div class="slider-header">
+          <span>TETO DE POTÊNCIA</span>
+          <span id="speedLimitLabel">100%</span>
+        </div>
+        <input type="range" id="speedLimit" min="40" max="100" value="100" oninput="updateSpeedLimit(this.value)">
+      </div>
+
+      <!-- Turbo -->
+      <button class="btn-tactical btn-turbo" id="btnTurbo" 
+              ontouchstart="startTurbo(event)" ontouchend="stopTurbo(event)" 
+              onmousedown="startTurbo(event)" onmouseup="stopTurbo(event)">
+        ⚡ ATAQUE TURBO (100%)
+      </button>
+
+      <!-- Giro 180° -->
+      <button class="btn-tactical btn-t180" onclick="sendSpin180()">
+        🔄 GIRO TÁTICO 180°
+      </button>
+
+      <!-- Gatilho da Arma -->
+      <button class="btn-tactical btn-weapon" id="btnWeapon" onclick="toggleWeapon()">
+        ⚔️ ARMA ATIVA (P16): OFF
+      </button>
+
+      <!-- Botão Parada Emergencial -->
+      <button class="btn-stop" onclick="sendEmergencyStop()">
+        PARADA DE EMERGÊNCIA (STOP)
+      </button>
+    </div>
+
+  </div>
+
+  <script>
+    // ==========================================================
+    // CONFIGURAÇÕES BLUETOOTH LOW ENERGY (NORDIC UART SERVICE)
+    // ==========================================================
+    const NUS_SERVICE_UUID = '6e400001-b5a3-f393-e0a9-e50e24dcca9e';
+    const NUS_RX_CHAR_UUID = '6e400003-b5a3-f393-e0a9-e50e24dcca9e'; // Phone to micro:bit
+
+    let bleDevice = null;
+    let rxCharacteristic = null;
+    let isConnected = false;
+
+    let speedLimit = 1.0;
+    let weaponActive = false;
+    let packetCount = 0;
+    let lastPacketTime = Date.now();
+
+    // ==========================================================
+    // CONEXÃO WEB BLUETOOTH
+    // ==========================================================
+    async function toggleConnect() {
+      if (isConnected) {
+        disconnectBLE();
+      } else {
+        connectBLE();
+      }
+    }
+
+    async function connectBLE() {
+      if (!navigator.bluetooth) {
+        alert("Web Bluetooth não é suportado neste navegador!\n\nNo Android: Use Google Chrome ou Samsung Internet.\nNo iOS: Use o navegador 'Bluefy' da App Store.\nNo PC/Mac: Use Google Chrome ou Edge.");
+        return;
+      }
+
+      try {
+        updateStatus("Procurando...", false);
+        bleDevice = await navigator.bluetooth.requestDevice({
+          filters: [
+            { namePrefix: 'BBC micro:bit' }
+          ],
+          optionalServices: [NUS_SERVICE_UUID]
+        });
+
+        bleDevice.addEventListener('gattserverdisconnected', onDisconnected);
+
+        updateStatus("Conectando...", false);
+        const server = await bleDevice.gatt.connect();
+        const service = await server.getPrimaryService(NUS_SERVICE_UUID);
+        rxCharacteristic = await service.getCharacteristic(NUS_RX_CHAR_UUID);
+
+        isConnected = true;
+        updateStatus("Conectado!", true);
+        document.getElementById('btnConnect').innerText = "DESCONECTAR";
+        document.getElementById('btnConnect').classList.add('connected');
+      } catch (err) {
+        console.error("Erro BLE:", err);
+        updateStatus("Falha ao Conectar", false);
+        setTimeout(() => updateStatus("Desconectado", false), 2000);
+      }
+    }
+
+    function disconnectBLE() {
+      if (bleDevice && bleDevice.gatt.connected) {
+        bleDevice.gatt.disconnect();
+      }
+      onDisconnected();
+    }
+
+    function onDisconnected() {
+      isConnected = false;
+      rxCharacteristic = null;
+      updateStatus("Desconectado", false);
+      document.getElementById('btnConnect').innerText = "CONECTAR";
+      document.getElementById('btnConnect').classList.remove('connected');
+      resetMotorsTelemetry();
+    }
+
+    function updateStatus(text, connected) {
+      document.getElementById('statusText').innerText = text;
+      const badge = document.getElementById('statusBadge');
+      if (connected) {
+        badge.classList.add('connected');
+      } else {
+        badge.classList.remove('connected');
+      }
+    }
+
+    // ==========================================================
+    // TRANSMISSÃO DE COMANDOS VIA BLE
+    // ==========================================================
+    async function sendCommand(cmd) {
+      if (!isConnected || !rxCharacteristic) return;
+
+      try {
+        const encoder = new TextEncoder();
+        const data = encoder.encode(cmd + "\n");
+        await rxCharacteristic.writeValueWithoutResponse(data);
+        packetCount++;
+      } catch (e) {
+        // Se a escrita falhar, tenta envio seguro com resposta
+        try {
+          const encoder = new TextEncoder();
+          await rxCharacteristic.writeValue(encoder.encode(cmd + "\n"));
+          packetCount++;
+        } catch (err) {
+          console.warn("Erro no envio:", err);
+        }
+      }
+    }
+
+    // ==========================================================
+    // JOYSTICK ANALÓGICO VIRTUAL 360°
+    // ==========================================================
+    const base = document.getElementById('joystickBase');
+    const thumb = document.getElementById('joystickThumb');
+    let joystickActive = false;
+    let joystickTimer = null;
+    let targetLeft = 0;
+    let targetRight = 0;
+
+    base.addEventListener('pointerdown', (e) => {
+      joystickActive = true;
+      base.setPointerCapture(e.pointerId);
+      handleJoystick(e);
+      if (!joystickTimer) {
+        joystickTimer = setInterval(sendDrivePacket, 40); // 25 FPS
+      }
+    });
+
+    base.addEventListener('pointermove', (e) => {
+      if (joystickActive) handleJoystick(e);
+    });
+
+    base.addEventListener('pointerup', releaseJoystick);
+    base.addEventListener('pointercancel', releaseJoystick);
+
+    function releaseJoystick() {
+      joystickActive = false;
+      if (joystickTimer) {
+        clearInterval(joystickTimer);
+        joystickTimer = null;
+      }
+      thumb.style.transform = `translate(0px, 0px)`;
+      targetLeft = 0;
+      targetRight = 0;
+      sendCommand("S");
+      resetMotorsTelemetry();
+    }
+
+    function handleJoystick(e) {
+      const rect = base.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+      const maxRadius = rect.width / 2 - 25;
+
+      let dx = e.clientX - centerX;
+      let dy = e.clientY - centerY;
+      const distance = Math.hypot(dx, dy);
+
+      if (distance > maxRadius) {
+        const angle = Math.atan2(dy, dx);
+        dx = Math.cos(angle) * maxRadius;
+        dy = Math.sin(angle) * maxRadius;
+      }
+
+      thumb.style.transform = `translate(${dx}px, ${dy}px)`;
+
+      // Normaliza de -1.0 a +1.0
+      // dy invertido: empurrar para cima é avanço positivo
+      const normX = dx / maxRadius;
+      const normY = -dy / maxRadius;
+
+      // Arcade Drive Mixing
+      let left = normY + normX;
+      let right = normY - normX;
+
+      const maxVal = Math.max(Math.abs(left), Math.abs(right));
+      if (maxVal > 1.0) {
+        left /= maxVal;
+        right /= maxVal;
+      }
+
+      targetLeft = Math.round(left * 1023 * speedLimit);
+      targetRight = Math.round(right * 1023 * speedLimit);
+
+      document.getElementById('valL').innerText = Math.round((targetLeft / 1023) * 100) + "%";
+      document.getElementById('valR').innerText = Math.round((targetRight / 1023) * 100) + "%";
+    }
+
+    function sendDrivePacket() {
+      if (joystickActive) {
+        sendCommand(`D:${targetLeft},${targetRight}`);
+      }
+    }
+
+    function resetMotorsTelemetry() {
+      document.getElementById('valL').innerText = "0%";
+      document.getElementById('valR').innerText = "0%";
+    }
+
+    // ==========================================================
+    // AÇÕES TÁTICAS
+    // ==========================================================
+    function startTurbo(e) {
+      if (e) e.preventDefault();
+      sendCommand("TURBO");
+      document.getElementById('valL').innerText = "100%";
+      document.getElementById('valR').innerText = "100%";
+    }
+
+    function stopTurbo(e) {
+      if (e) e.preventDefault();
+      sendCommand("S");
+      resetMotorsTelemetry();
+    }
+
+    function sendSpin180() {
+      sendCommand("T180");
+    }
+
+    function toggleWeapon() {
+      weaponActive = !weaponActive;
+      const btn = document.getElementById('btnWeapon');
+      if (weaponActive) {
+        btn.classList.add('active');
+        btn.innerText = "⚔️ ARMA ATIVA (P16): ON";
+        sendCommand("ARMA_ON");
+      } else {
+        btn.classList.remove('active');
+        btn.innerText = "⚔️ ARMA ATIVA (P16): OFF";
+        sendCommand("ARMA_OFF");
+      }
+    }
+
+    function sendEmergencyStop() {
+      sendCommand("S");
+      if (weaponActive) toggleWeapon();
+      releaseJoystick();
+    }
+
+    function updateSpeedLimit(val) {
+      speedLimit = val / 100;
+      document.getElementById('speedLimitLabel').innerText = val + "%";
+    }
+
+    // Monitor de taxa de pacotes
+    setInterval(() => {
+      document.getElementById('valPackets').innerText = packetCount;
+      packetCount = 0;
+    }, 1000);
+  </script>
+</body>
+</html>

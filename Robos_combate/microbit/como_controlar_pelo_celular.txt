@@ -1,0 +1,106 @@
+=====================================================================================
+PROJETO: GUIA PRÁTICO - ROBÔ BBC MICRO:BIT V2 CONTROLADO PELO CELULAR (BLUETOOTH BLE)
+=====================================================================================
+
+1. VANTAGEM DESTA VERSÃO: ZERO DEPENDÊNCIA DE UM SEGUNDO MICRO:BIT!
+-------------------------------------------------------------------------------------
+Nas versões tradicionais de micro:bit, é necessário ter DUAS placas:
+uma no robô e outra na sua mão como transmissor de rádio.
+
+Com este firmware para o BBC micro:bit V2:
+  * Você só precisa de 1 ÚNICA PLACA BBC MICRO:BIT (instalada no robô)!
+  * O micro:bit V2 possui processador nRF52833 de 64MHz e rádio Bluetooth Low Energy (BLE)
+    de alto alcance.
+  * Você pilota diretamente pelo seu SMARTPHONE (Android, iPhone ou PC/Notebook)!
+
+=====================================================================================
+2. ESCOLHA DO FIRMWARE CONFORME SEU HARDWARE
+=====================================================================================
+  [Opção A] Se você usa o SHIELD 4TRONIX ROBO:BIT:
+    - Use o arquivo: `microbit_v2_bluetooth_robobit.js`
+    - Ele controla diretamente o driver do Robo:Bit nos pinos P0/P8 e P1/P12.
+
+  [Opção B] Se você usa PONTE H L298N ou TB6612FNG com cabos avulsos:
+    - Use o arquivo: `microbit_v2_bluetooth_l298n.js`
+    - Ele controla os pinos P0, P1, P8, P12 e P16 para a ponte H.
+
+=====================================================================================
+3. PASSO A PASSO NO MICROSOFT MAKECODE
+=====================================================================================
+PASSO 1: Acesse https://makecode.microbit.org e crie um "Novo Projeto".
+
+PASSO 2: Instalação da Extensão Bluetooth
+  - Clique na engrenagem no canto superior direito ➔ "Extensões" (Extensions).
+  - Digite "bluetooth" na busca e selecione a extensão oficial de Bluetooth.
+  - O MakeCode mostrará um aviso informando que a biblioteca de rádio será desativada
+    para liberar o Bluetooth. Clique em "Remover extensão(ões) e adicionar bluetooth".
+
+PASSO 3: CONFIGURAÇÃO DE CONEXÃO DIRETA (SEM CÓDIGO PIN)
+  - Este passo é FUNDAMENTAL para conectar direto pelo celular sem complicação!
+  - Clique na engrenagem ➔ "Configurações do Projeto" (Project Settings).
+  - Role a página até encontrar:
+      "No Pairing Required: Anyone can connect via Bluetooth"
+  - Ative essa chave (deixe em ON / Ligado).
+
+PASSO 4: Inserção do Código
+  - No topo central do MakeCode, mude de "Blocos" para "JavaScript".
+  - Cole todo o código de `microbit_v2_bluetooth_robobit.js` (ou da versão L298N).
+  - Clique em "Baixar" (Download) e salve o arquivo .hex no micro:bit conectado via USB!
+
+=====================================================================================
+4. COMO PILOTAR PELO CELULAR
+=====================================================================================
+
+MÉTODO 1: Web Bluetooth Controller (RECOMENDADO - ZERO INSTALAÇÃO!)
+-------------------------------------------------------------------------------------
+Você não precisa baixar nenhum aplicativo da Play Store ou App Store:
+  1. Abra o arquivo `controle_celular_web_bluetooth.html` no seu celular:
+     - No Android: Abra no Google Chrome ou Samsung Internet.
+     - No iPhone: Abra no navegador gratuito "Bluefy" (disponível na App Store).
+     - No PC/Notebook: Abra no Google Chrome ou Microsoft Edge.
+  2. Clique no botão azul "CONECTAR" no topo da tela.
+  3. O navegador abrirá a lista de dispositivos Bluetooth: selecione "BBC micro:bit [xxxxx]".
+  4. Pronto! O micro:bit mostrará um rosto feliz (😊) e a tela exibirá um Joystick
+     analógico 360°, botão TURBO, Giro 180° e gatilho de arma!
+
+MÉTODO 2: Aplicativo "Serial Bluetooth Terminal" (Android - Grátis)
+-------------------------------------------------------------------------------------
+Se preferir usar um aplicativo tradicional da Play Store:
+  1. Baixe o "Serial Bluetooth Terminal" (desenvolvedor Kai Morich) na Google Play.
+  2. No menu lateral ➔ "Devices" ➔ aba "Bluetooth LE" ➔ clique em Scan e conecte no micro:bit.
+  3. No menu lateral ➔ "Settings" ➔ "Send" ➔ selecione Newline = "LF (\n)".
+  4. Configure os botões rápidos (M1 a M6) segurando o dedo sobre eles:
+       - M1: Nome "FRENTE"   | Comando: F
+       - M2: Nome "RÉ"       | Comando: B
+       - M3: Nome "ESQUERDA" | Comando: L
+       - M4: Nome "DIREITA"  | Comando: R
+       - M5: Nome "PARAR"    | Comando: S
+       - M6: Nome "TURBO"    | Comando: T
+       - M7: Nome "GIRO 180" | Comando: G
+       - M8: Nome "ARMA ON"  | Comando: X
+       - M9: Nome "ARMA OFF" | Comando: x
+
+=====================================================================================
+5. TABELA DE COMANDOS DO PROTOCOLO BLE
+=====================================================================================
+
+  COMANDO VIA BLUETOOTH | AÇÃO NO ROBÔ              | FEEDBACK NA TELA 5x5
+  ----------------------+---------------------------+----------------------
+  D:<velL>,<velR>\n     | Joystick Proporcional     | Seta Direcional (↑, ↓, ←, →)
+  F\n                   | Frente Contínua (85%)     | Seta Norte (↑)
+  B\n                   | Ré Contínua (85%)         | Seta Sul (↓)
+  L\n                   | Giro Esquerda (Tanque)    | Seta Oeste (←)
+  R\n                   | Giro Direita (Tanque)     | Seta Leste (→)
+  S\n                   | Parada Total Neutro       | Pequeno Diamante (◆)
+  TURBO\n ou T\n        | Potência Máxima 100%      | Caveira (💀)
+  T180\n ou G\n         | Giro Tático de Meia Volta | Espanto (😲)
+  ARMA_ON\n ou X\n      | Liga Pino P16 (MOSFET)    | Espada (⚔)
+  ARMA_OFF\n ou x\n     | Desliga Pino P16 (MOSFET) | Pequeno Diamante (◆)
+
+=====================================================================================
+6. SEGURANÇA E FAILSAFE AUTOMÁTICO
+=====================================================================================
+  * Se o celular desconectar ou o sinal sumir por mais de 500ms, o micro:bit corta
+    a tração de todos os motores imediatamente e desliga a arma de combate.
+  * A tela exibirá um ícone de tristeza (😢) e depois um X (❌) alertando que o robô
+    está em repouso de segurança.
