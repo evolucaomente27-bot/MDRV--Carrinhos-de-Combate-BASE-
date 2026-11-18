@@ -1,0 +1,125 @@
+===============================================================================
+       GUIA DE MONTAGEM PASSO A PASSO: ROBÔ DE COMBATE COM ESP32 + L298N
+       Controle por Wi-Fi Web Controller com Failsafe de Segurança
+===============================================================================
+
+Este manual detalha o passo a passo exato para você montar, ligar os fios,
+gravar o código e pilotar o robô de batalha com ESP32 a partir do celular.
+
+-------------------------------------------------------------------------------
+PASSO 1: PREPARAÇÃO MECÂNICA E MOTORES
+-------------------------------------------------------------------------------
+1. Pegue os 02 motores DC (amarelos TT ou micro motores metálicos N20).
+2. Solde dois fios flexíveis nos terminais de cada motor (cerca de 15 cm cada):
+   - Motor Esquerdo: 1 fio vermelho e 1 fio preto.
+   - Motor Direito: 1 fio vermelho e 1 fio preto.
+3. Fixe os motores no chassi com os parafusos de fixação.
+4. Encaixe as rodas nos eixos dos motores (deixe o robô apoiado com as rodas no
+   ar sobre uma caixinha durante todos os testes elétricos para segurança!).
+
+-------------------------------------------------------------------------------
+PASSO 2: CONEXÃO DOS MOTORES NA PONTE H L298N
+-------------------------------------------------------------------------------
+1. Localize os bornes de parafuso laterais azuis na Ponte H L298N:
+   - Borne Esquerdo (OUT1 e OUT2):
+     * Conecte os dois fios do Motor Esquerdo e aperte os parafusos.
+   - Borne Direito (OUT3 e OUT4):
+     * Conecte os dois fios do Motor Direito e aperte os parafusos.
+2. Verifique os Jumpers de Velocidade (ENA e ENB):
+   - Na fileira frontal de pinos da Ponte H, certifique-se de que os DOIS
+     jumpers plásticos pretos sobre ENA e ENB estão DEVIDAMENTE ENCAIXADOS.
+     (Eles mantêm os canais ativos para receberem o PWM direto nos pinos IN1-IN4).
+3. Verifique o Jumper do Regulador de 5V:
+   - Certifique-se de que o jumper preto de 5V (logo atrás do borne azul de 3
+     vias) está ENCAIXADO. Isso ativa a saída de 5V para alimentar o ESP32!
+
+-------------------------------------------------------------------------------
+PASSO 3: FIAÇÃO DE ALIMENTAÇÃO E CHAVE GERAL (KILL SWITCH)
+-------------------------------------------------------------------------------
+1. Polo Negativo (-) da Bateria (fio preto):
+   - Ligue diretamente no borne do meio do L298N identificado como "GND".
+2. Polo Positivo (+) da Bateria (fio vermelho):
+   - Ligue um fio do (+) da bateria até um dos terminais da Chave Geral.
+   - Do outro terminal da Chave Geral, puxe um fio vermelho e parafuse no
+     borne do L298N identificado como "+12V" (ou VMS).
+3. Alimentação da Placa ESP32:
+   - Puxe um fio vermelho do borne "+5V" do L298N e ligue no pino "VIN" (ou 5V)
+     da placa ESP32.
+   - Puxe um fio preto do borne "GND" do L298N e ligue em um dos pinos "GND"
+     da placa ESP32.
+   * REGRA DE OURO: O GND da bateria, o GND do L298N e o GND do ESP32 DEVEM
+     estar interligados juntos (Terra Comum Unificado).
+
+-------------------------------------------------------------------------------
+PASSO 4: FIAÇÃO DOS SINAIS DE CONTROLE (ESP32 ➔ L298N)
+-------------------------------------------------------------------------------
+Use 4 cabos jumper fêmea-fêmea para ligar o ESP32 aos pinos lógicos da Ponte H:
+
+  * ESP32 pino GPIO 18 (D18) ----> pino IN1 da Ponte H (Motor Esquerdo Frente)
+  * ESP32 pino GPIO 19 (D19) ----> pino IN2 da Ponte H (Motor Esquerdo Ré)
+  * ESP32 pino GPIO 22 (D22) ----> pino IN3 da Ponte H (Motor Direito Frente)
+  * ESP32 pino GPIO 23 (D23) ----> pino IN4 da Ponte H (Motor Direito Ré)
+
+* Canal de Arma (Opcional):
+  * ESP32 pino GPIO 26 (D26) ----> Entrada de sinal do Módulo Relé ou MOSFET.
+
+-------------------------------------------------------------------------------
+PASSO 5: GRAVAÇÃO DO PROGRAMA NO ESP32
+-------------------------------------------------------------------------------
+1. Conecte o ESP32 ao computador pelo cabo USB (ainda com a bateria desligada).
+2. Abra o Arduino IDE e abra o arquivo: "robo_combate.ino".
+3. Em "Ferramentas" (Tools):
+   - Placa (Board): Selecione "ESP32 Dev Module" (ou sua placa ESP32 equivalente).
+   - Porta (Port): Selecione a porta COM correspondente ao ESP32.
+   - Velocidade de Upload: 921600 (ou 115200 se der erro).
+4. Clique na seta de "Carregar" (Upload).
+   * DICA: Se a barra de progresso ficar em "Connecting...___...", aperte e
+     segure o botão "BOOT" da placa ESP32 por 2 segundos e solte.
+5. Ao concluir o upload, abra o Monitor Serial na velocidade 115200 baud.
+   Você verá a mensagem:
+   "[Wi-Fi] Ponto de Acesso criado: Robo-Combate"
+   "[Wi-Fi] Endereço IP do Robô: 192.168.4.1"
+
+-------------------------------------------------------------------------------
+PASSO 6: CONEXÃO E PILOTAGEM PELO CELULAR
+-------------------------------------------------------------------------------
+1. Desconecte o cabo USB do computador e ligue a Chave Geral da bateria.
+2. No celular (Android ou iPhone):
+   - Abra as configurações de Wi-Fi e procure por redes próximas.
+   - Conecte na rede: "Robo-Combate" (rede aberta, sem senha).
+   * Se o celular exibir "Esta rede não tem acesso à internet", confirme a
+     opção "Manter conectado".
+3. Abra o navegador do celular (Chrome ou Safari) e digite na barra de endereços:
+   192.168.4.1
+4. A tela do controle de combate aparecerá instantaneamente:
+   - O selo no topo mostrará "CONECTADO" em verde.
+   - Toque e segure na seta PARA CIMA: o robô avança.
+   - Toque na seta PARA BAIXO: o robô recua.
+   - Toque nas setas LATERAIS: o robô faz giro rápido sobre o próprio eixo.
+   - Ajuste o slider de "Potência dos Motores" para controlar a aceleração.
+   - Clique em "ARMA" para ativar/desativar o atuador.
+
+-------------------------------------------------------------------------------
+PASSO 7: TESTE OBRIGATÓRIO DE FAILSAFE (SEGURANÇA)
+-------------------------------------------------------------------------------
+1. Com o robô apoiado (rodas livres no ar), pressione e segure o botão de avançar.
+2. Enquanto as rodas estiverem girando, DESLIGUE o Wi-Fi do celular.
+3. O robô deve PARAR IMEDIATAMENTE os motores em menos de 0,4 segundo (400ms)!
+   Isso garante conformidade com as regras oficiais de combate de robôs.
+
+-------------------------------------------------------------------------------
+RESOLUÇÃO DE DÚVIDAS COMUNS (TROUBLESHOOTING)
+-------------------------------------------------------------------------------
+* Problema: Pressionei para frente, mas o robô gira em círculo ou vai para trás.
+  -> Solução: Um ou ambos os motores estão invertidos. Basta inverter a posição
+     dos dois fios do motor no borne azul do L298N correspondente.
+
+* Problema: O ESP32 reinicia toda vez que os motores ligam na força máxima.
+  -> Solução: Bateria com carga fraca ou bitola fina no fio do GND/5V.
+     Certifique-se de que a bateria LiPo está totalmente carregada e que o
+     fio do GND tem bom contato.
+
+* Problema: A página 192.168.4.1 não abre.
+  -> Solução: Desative os "Dados Móveis (4G/5G)" do celular durante o teste para
+     que o navegador não tente buscar o IP na rede da operadora móvel.
+===============================================================================

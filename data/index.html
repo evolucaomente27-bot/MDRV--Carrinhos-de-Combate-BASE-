@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Controle do Robô de Combate ESP32</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      user-select: none;
+      touch-action: manipulation;
+    }
+    body {
+      margin: 0;
+      padding: 12px;
+      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background: radial-gradient(circle at center, #1b1b26 0%, #0c0c10 100%);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    header {
+      width: 100%;
+      max-width: 440px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 16px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      margin-bottom: 16px;
+    }
+    .title-box h1 {
+      margin: 0;
+      font-size: 1.15rem;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: #ff9800;
+    }
+    .title-box span {
+      font-size: 0.75rem;
+      color: #888;
+    }
+    .status-badge {
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: bold;
+      background: #4caf50;
+      color: #fff;
+      box-shadow: 0 0 8px rgba(76, 175, 80, 0.6);
+      transition: all 0.3s;
+    }
+    .status-badge.offline {
+      background: #f44336;
+      box-shadow: 0 0 8px rgba(244, 67, 54, 0.6);
+    }
+    .container {
+      width: 100%;
+      max-width: 440px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      align-items: center;
+    }
+
+    /* D-PAD CONTROLLER */
+    .dpad-container {
+      position: relative;
+      width: 270px;
+      height: 270px;
+      margin: 8px auto;
+    }
+    .btn-ctrl {
+      position: absolute;
+      background: linear-gradient(145deg, #2a2a38, #1c1c26);
+      border: 2px solid #3d3d52;
+      border-radius: 16px;
+      color: #eee;
+      font-size: 1.8rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.6);
+      transition: transform 0.05s, border-color 0.1s;
+    }
+    .btn-ctrl:active, .btn-ctrl.active {
+      transform: scale(0.93);
+      border-color: #ff9800;
+      background: #ff9800;
+      color: #111;
+      box-shadow: 0 0 16px rgba(255, 152, 0, 0.85);
+    }
+    .btn-fwd  { top: 0; left: 88px; width: 94px; height: 85px; border-radius: 22px 22px 10px 10px; }
+    .btn-rev  { bottom: 0; left: 88px; width: 94px; height: 85px; border-radius: 10px 10px 22px 22px; }
+    .btn-left { top: 88px; left: 0; width: 85px; height: 94px; border-radius: 22px 10px 10px 22px; }
+    .btn-right{ top: 88px; right: 0; width: 85px; height: 94px; border-radius: 10px 22px 22px 10px; }
+    .btn-stop {
+      top: 88px; left: 88px; width: 94px; height: 94px;
+      border-radius: 50%;
+      background: #dc3545;
+      border: 3px solid #ff5252;
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 900;
+      letter-spacing: 1px;
+      box-shadow: 0 0 12px rgba(220, 53, 69, 0.7);
+    }
+    .btn-stop:active, .btn-stop.active {
+      background: #ff1744;
+      transform: scale(0.9);
+      box-shadow: 0 0 24px rgba(255, 23, 68, 1);
+    }
+
+    /* CONTROLS PANEL */
+    .controls-panel {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .slider-box {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .slider-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.9rem;
+      color: #bbb;
+    }
+    input[type=range] {
+      width: 100%;
+      height: 8px;
+      border-radius: 4px;
+      background: #333;
+      accent-color: #ff9800;
+      cursor: pointer;
+    }
+    .weapon-btn {
+      width: 100%;
+      padding: 16px;
+      font-size: 1.15rem;
+      font-weight: bold;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      border-radius: 12px;
+      border: 2px solid #ff3d00;
+      background: linear-gradient(180deg, #d50000, #8e0000);
+      color: #fff;
+      box-shadow: 0 4px 15px rgba(213, 0, 0, 0.4);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: all 0.2s;
+    }
+    .weapon-btn.on {
+      background: linear-gradient(180deg, #00e676, #009624);
+      border-color: #00c853;
+      box-shadow: 0 0 20px rgba(0, 230, 118, 0.6);
+    }
+    .footer-note {
+      font-size: 0.75rem;
+      color: #777;
+      text-align: center;
+      line-height: 1.4;
+    }
+    .log-box {
+      font-family: monospace;
+      font-size: 0.7rem;
+      color: #aaa;
+      background: rgba(0,0,0,0.4);
+      padding: 6px 12px;
+      border-radius: 8px;
+      width: 100%;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="title-box">
+      <h1>COMBAT BOT</h1>
+      <span>ESP32 + PONTE H</span>
+    </div>
+    <div id="status" class="status-badge">CONECTADO</div>
+  </header>
+
+  <div class="container">
+    <!-- D-PAD CONTROLLER -->
+    <div class="dpad-container">
+      <button class="btn-ctrl btn-fwd"   data-cmd="F" aria-label="Frente">&#9650;</button>
+      <button class="btn-ctrl btn-left"  data-cmd="L" aria-label="Girar Esquerda">&#9664;</button>
+      <button class="btn-ctrl btn-stop"  data-cmd="S" aria-label="Parada de Emergência">STOP</button>
+      <button class="btn-ctrl btn-right" data-cmd="R" aria-label="Girar Direita">&#9654;</button>
+      <button class="btn-ctrl btn-rev"   data-cmd="B" aria-label="Ré">&#9660;</button>
+    </div>
+
+    <!-- PAINEL DE VELOCIDADE E ARMA -->
+    <div class="controls-panel">
+      <!-- VELOCIDADE -->
+      <div class="slider-box">
+        <div class="slider-header">
+          <span>Potência dos Motores (PWM)</span>
+          <span id="speedVal">100%</span>
+        </div>
+        <input type="range" id="speedSlider" min="100" max="255" value="255" step="5">
+      </div>
+
+      <!-- ARMA / ATUADOR -->
+      <button id="weaponBtn" class="weapon-btn">
+        <span>&#9889; ARMA: DESLIGADA</span>
+      </button>
+
+      <div id="cmdLog" class="log-box">Último Comando: PARADO [S]</div>
+    </div>
+
+    <div class="footer-note">
+      Segurança Ativa: Failsafe com Watchdog automático em 400ms.<br>
+      Ao soltar os botões, os motores desligam imediatamente.
+    </div>
+  </div>
+
+  <script>
+    let activeCmd = 'S';
+    let currentSpeed = 255;
+    let weaponState = 0;
+    const statusBadge = document.getElementById('status');
+    const speedSlider = document.getElementById('speedSlider');
+    const speedVal = document.getElementById('speedVal');
+    const weaponBtn = document.getElementById('weaponBtn');
+    const cmdLog = document.getElementById('cmdLog');
+
+    const cmdNames = {
+      'F': 'FRENTE (Avançar)',
+      'B': 'RÉ (Recuar)',
+      'L': 'GIRAR ESQUERDA',
+      'R': 'GIRAR DIREITA',
+      'S': 'PARADO'
+    };
+
+    speedSlider.addEventListener('input', (e) => {
+      currentSpeed = e.target.value;
+      let pct = Math.round((currentSpeed / 255) * 100);
+      speedVal.innerText = pct + '%';
+      sendCommand(activeCmd);
+    });
+
+    weaponBtn.addEventListener('click', () => {
+      weaponState = weaponState ? 0 : 1;
+      if (weaponState) {
+        weaponBtn.classList.add('on');
+        weaponBtn.innerHTML = '<span>&#9889; ARMA: LIGADA</span>';
+      } else {
+        weaponBtn.classList.remove('on');
+        weaponBtn.innerHTML = '<span>&#9889; ARMA: DESLIGADA</span>';
+      }
+      sendCommand(activeCmd);
+    });
+
+    function sendCommand(cmd) {
+      activeCmd = cmd;
+      cmdLog.innerText = `Último Comando: ${cmdNames[cmd] || cmd} | PWM: ${currentSpeed}`;
+      const url = `/cmd?dir=${cmd}&speed=${currentSpeed}&weapon=${weaponState}`;
+      fetch(url, { method: 'GET', cache: 'no-store' })
+        .then(response => {
+          if (response.ok) {
+            statusBadge.innerText = 'CONECTADO';
+            statusBadge.classList.remove('offline');
+          }
+        })
+        .catch(() => {
+          // Em caso de teste local em navegador sem ESP32 conectado
+          statusBadge.innerText = 'SIMULAÇÃO LOCAL';
+          statusBadge.classList.remove('offline');
+        });
+    }
+
+    const buttons = document.querySelectorAll('.btn-ctrl');
+    buttons.forEach(btn => {
+      const cmd = btn.getAttribute('data-cmd');
+
+      const startAction = (e) => {
+        e.preventDefault();
+        btn.classList.add('active');
+        sendCommand(cmd);
+      };
+
+      const endAction = (e) => {
+        e.preventDefault();
+        btn.classList.remove('active');
+        sendCommand('S');
+      };
+
+      btn.addEventListener('touchstart', startAction, { passive: false });
+      btn.addEventListener('touchend', endAction, { passive: false });
+      btn.addEventListener('mousedown', startAction);
+      btn.addEventListener('mouseup', endAction);
+      btn.addEventListener('mouseleave', () => {
+        if (btn.classList.contains('active')) {
+          btn.classList.remove('active');
+          sendCommand('S');
+        }
+      });
+    });
+
+    // Heartbeat Failsafe Keeper (200ms)
+    setInterval(() => {
+      if (activeCmd !== 'S') {
+        sendCommand(activeCmd);
+      } else {
+        fetch(`/cmd?dir=S&speed=${currentSpeed}&weapon=${weaponState}`, { cache: 'no-store' })
+          .then(() => {
+            statusBadge.innerText = 'CONECTADO';
+            statusBadge.classList.remove('offline');
+          })
+          .catch(() => {
+            if (window.location.protocol !== 'file:') {
+              statusBadge.innerText = 'SEM SINAL';
+              statusBadge.classList.add('offline');
+            }
+          });
+      }
+    }, 200);
+  </script>
+</body>
+</html>

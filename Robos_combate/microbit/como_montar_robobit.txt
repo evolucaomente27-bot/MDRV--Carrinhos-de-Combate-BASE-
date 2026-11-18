@@ -1,0 +1,101 @@
+=====================================================================================
+PROJETO: GUIA DE MONTAGEM - ROBÔ DE COMBATE COM BBC MICRO:BIT + SHIELD ROBO:BIT
+=====================================================================================
+
+1. O QUE É O SHIELD ROBO:BIT?
+-------------------------------------------------------------------------------------
+O 4tronix Robo:Bit (Mk1, Mk2 ou Mk3) é uma das melhores plataformas robóticas para
+o BBC micro:bit. Em vez de usar pontes H avulsas (como L298N) cheias de fios e protoboards,
+o Robo:Bit possui:
+  - Conector de borda vertical: o micro:bit encaixa diretamente sem fios soltos!
+  - Driver duplo de motor integrado (chip ponte H integrado de alto rendimento).
+  - Bornes de parafuso industriais para ligar os motores esquerdo e direito.
+  - Chave Liga/Desliga (Power Switch) integrada e LED indicador de energia.
+  - Conector integrado para baterias (suporte de pilhas AA ou plugue DC/JST).
+  - Barras de pinos expostas para sensores e acionamento de armas (P16, P14, P15, P2).
+
+=====================================================================================
+2. LISTA DE MATERIAIS
+=====================================================================================
+  [X] 1x Placa BBC micro:bit (V1 ou V2) - Será o "cérebro" do robô.
+  [X] 1x Shield 4tronix Robo:Bit (Mk1, Mk2 ou Mk3).
+  [X] 2x Motores DC com redução (Motores Amarelos TT 1:48 ou Motores Micro N20).
+  [X] 2x Rodas de borracha aderente para combate.
+  [X] 1x Roda boba (esfera metálica tipo caster) para o apoio traseiro ou dianteiro.
+  [X] 1x Chassi de acrílico, fibra, alumínio ou impresso em 3D.
+  [X] 1x Pack de baterias: 4x Pilhas AA Alcalinas (6.0V) OU Bateria LiPo 2S 7.4V.
+  [X] (Opcional) 1x Módulo MOSFET ou mini servo conectado no pino P16 para arma ativa.
+  [X] 1x Segundo micro:bit com o código de transmissor na sua mão!
+
+=====================================================================================
+3. MAPEAMENTO DE PINOS DO ROBO:BIT (PADRÃO DE FÁBRICA)
+=====================================================================================
+O micro:bit comunica-se com a placa pelos seguintes pinos dedicados:
+
+  FUNÇÃO               | PINO MICRO:BIT | TIPO DE SINAL
+  ---------------------+----------------+--------------------------------------------
+  Motor Esquerdo (PWM) | P0             | Velocidade Analógica PWM (0 a 1023)
+  Motor Esquerdo (DIR) | P8             | Sentido Digital (0 = Frente, 1 = Ré)
+  Motor Direito (PWM)  | P1             | Velocidade Analógica PWM (0 a 1023)
+  Motor Direito (DIR)  | P12            | Sentido Digital (0 = Frente, 1 = Ré)
+  Arma / Gatilho       | P16            | Sinal Digital LÓGICO (HIGH = Liga, LOW = Desliga)
+  Ultrassom Trig/Echo  | P14 / P15      | Opcional para combate autônomo (Mk3)
+  LEDs RGB Traseiros   | P16 (ou P13)   | Iluminação tática na versão Mk3
+
+=====================================================================================
+4. PASSO A PASSO DE MONTAGEM FÍSICA
+=====================================================================================
+
+PASSO 1: Fixação dos Motores no Chassi
+  1. Aparafuse os dois micromotores DC nas laterais do chassi do seu robô.
+  2. Encaixe as rodas com pneus de borracha nos eixos dos motores.
+  3. Prenda a roda boba (caster) na outra extremidade para que o robô equilibre em 3 pontos.
+
+PASSO 2: Instalação do Shield Robo:Bit
+  1. Fixe a placa Robo:Bit firmemente sobre o chassi com parafusos M3 ou fita dupla face 3M.
+  2. Localize os dois blocos de terminais parafusáveis:
+       - Bloco "LEFT"  (Motor Esquerdo)
+       - Bloco "RIGHT" (Motor Direito)
+  3. Decape as pontas dos fios dos motores (cerca de 6mm).
+  4. Insira os dois fios do motor esquerdo no borne LEFT e aperte com a chave de fenda.
+  5. Insira os dois fios do motor direito no borne RIGHT e aperte com a chave de fenda.
+
+PASSO 3: Inserção do micro:bit no Conector
+  1. ATENÇÃO: Certifique-se de que a chave LIGA/DESLIGA do Robo:Bit está na posição OFF!
+  2. Encaixe a placa BBC micro:bit no slot de borda vertical de 40 pinos:
+       - A tela de LEDs 5x5 e os botões A e B devem ficar voltados para a frente do robô.
+  3. Pressione firmemente até que a placa entre completamente no slot.
+
+PASSO 4: Ligação da Bateria
+  1. Conecte o suporte de 4 pilhas AA (ou bateria LiPo 2S 7.4V) no conector de alimentação:
+       - Fio Vermelho: Positivo (+)
+       - Fio Preto: Negativo / Terra (-)
+  2. A placa Robo:Bit possui um regulador interno que alimenta o micro:bit com 3.3V limpos
+     e alimenta os motores com a voltagem total da bateria!
+
+PASSO 5: Instalação da Arma de Combate (Opcional)
+  1. Se você utiliza uma arma de impacto (disco giratório, martelo ou cunha com MOSFET):
+       - Conecte o pino de controle do MOSFET ao pino P16 exposto na barra de expansão.
+       - Ligue o GND do MOSFET ao GND do Robo:Bit.
+       - O botão A+B do controle ativará esse pino em combate!
+
+=====================================================================================
+5. TESTES E CALIBRAÇÃO DE SENTIDO DAS RODAS
+=====================================================================================
+1. Grave o código `robobit_robot.js` (no MakeCode) ou `robobit_robot.py` (no Mu Editor)
+   no micro:bit do robô.
+2. Ligue a chave do Robo:Bit (posição ON). O micro:bit mostrará um ícone de alvo e ficará pronto.
+3. Ligue o micro:bit transmissor na sua mão.
+4. Incline o controle para FRENTE:
+   - Se uma roda girar para trás, basta inverter os dois fios daquele motor no borne parafusável!
+   - Nenhuma linha de código precisa ser alterada.
+
+=====================================================================================
+6. VANTAGENS NO COMBATE
+=====================================================================================
+  * Zero fios soltos: Muito mais resistente a impactos de outros robôs.
+  * Centro de gravidade baixo e distribuição equilibrada de peso.
+  * Failsafe de 400ms: Se a bateria do controle acabar ou você perder o sinal, o robô para
+    imediatamente, evitando sair da arena ou colidir contra as paredes.
+  * Giro de 180° instantâneo no botão B para contra-ataque rápido.
+  * Modo TURBO no botão A para empurrar o oponente para fora da arena!

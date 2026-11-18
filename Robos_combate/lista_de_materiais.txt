@@ -1,0 +1,91 @@
+===============================================================================
+       LISTA DE MATERIAIS (BOM) - PROJETO ROBÔ DE COMBATE / BATALHA
+       Plataformas: ESP32 (Wi-Fi Web Controller) e Arduino + HC-05 (Bluetooth)
+===============================================================================
+
+-------------------------------------------------------------------------------
+1. ITENS COMUNS DE TRAÇÃO, POTÊNCIA E ESTRUTURA (Para ambos os projetos)
+-------------------------------------------------------------------------------
+[ ] 01x Módulo Ponte H L298N (Dupla, suporta até 2A por canal e tensões de 5V a 35V)
+        * Alternativa leve/compacta: Módulo TB6612FNG (ideal para Antweight)
+[ ] 02x Motores DC com Caixa de Redução:
+        * Iniciante/Testes: Motor DC Amarelo TT (3V-6V, redução 1:48)
+        * Combate/Competição: Micro Motor DC N20 com caixa de metal (6V-12V, 
+          redução de 30:1 até 50:1, eixo D)
+[ ] 02x Rodas com Pneus de Borracha de Alta Tração:
+        * Rodas plásticas padrão para motor TT ou rodas de silicone para motor N20
+[ ] 01x Esfera Deslizante (Caster Wheel) ou Apoio Frontal de Baixo Atrito (cunha)
+[ ] 01x Bateria Principal:
+        * Recomendada: Bateria LiPo 2S (7.4V, 1000mAh a 1500mAh, taxa de descarga 25C a 35C)
+        * Alternativa acessível: Suporte para 02 Baterias 18650 Li-Ion em série (7.4V)
+[ ] 01x Chave Geral Liga/Desliga (Kill Switch):
+        * Chave alavanca reforçada de metal (suporte mínimo 5A a 10A) ou 
+          par de conectores XT60 com pino de segurança externo
+[ ] 01x Conector de Bateria compatível (XT60 fêmea, JST ou Deans T)
+[ ] 01x Módulo de Acionamento da Arma / Atuador (Opcional):
+        * Módulo Transistor MOSFET IRF520 / D4184 (para motores escovados de alta corrente)
+        * Módulo Relé 5V de 1 canal (para solenoides ou atuadores simples)
+        * ESC Eletrônico de 20A-30A (caso use motor brushless na arma)
+[ ] 01x Kit de Cabos e Fios:
+        * Jumpers fêmea-fêmea, macho-fêmea e macho-macho (20cm)
+        * Fio flexível de silicone bitola 18 AWG a 20 AWG para linhas de força da bateria
+[ ] 01x Chassi / Estrutura física do Robô:
+        * Peça impressa em 3D (PLA+, PETG ou Nylon)
+        * Chapa de alumínio (1mm a 2mm), Polietileno PEAD ou Policarbonato
+
+-------------------------------------------------------------------------------
+2. ITENS ESPECÍFICOS - VERSÃO ESP32 (Wi-Fi Web Controller / Protoboard)
+-------------------------------------------------------------------------------
+[ ] 01x Placa de Desenvolvimento ESP32:
+        * Modelo: ESP32 DevKit v1 / NodeMCU-32S (30 ou 38 pinos, com chip ESP-WROOM-32)
+[ ] 01x Cabo USB (Micro-USB ou USB-C, dependendo da versão da sua placa ESP32)
+[ ] 01x Protoboard de 400 ou 830 pontos (para montagem de teste/bancada)
+[ ] 01x Módulo Fonte de Alimentação para Protoboard MB102 (3.3V / 5V):
+        * Essencial na montagem em protoboard: fornece 5V estabilizados e filtrados
+          para o ESP32, isolando o microcontrolador do ruído elétrico e das quedas
+          de tensão (brownouts) causadas pelos motores na Ponte H L298N.
+[ ] 01x Conector Plug P4 Macho com Borne (2.1mm x 5.5mm):
+        * Conecta a alimentação da bateria (6.5V a 12V) direto na entrada Jack do MB102.
+
+-------------------------------------------------------------------------------
+3. ITENS ESPECÍFICOS - VERSÃO ARDUINO + MÓDULO HC-05 (Bluetooth)
+-------------------------------------------------------------------------------
+[ ] 01x Placa Arduino:
+        * Modelo: Arduino Uno R3 (com cabo USB A-B) OU
+        * Modelo: Arduino Nano V3 com ATmega328P (com cabo Mini-USB, ideal para robôs leves)
+[ ] 01x Módulo Bluetooth HC-05 (ou HC-06) com antena integrada
+[ ] 01x Mini Protoboard (170 ou 400 pontos) para fixação do HC-05 e resistores
+[ ] 01x Resistor de 1 kΩ (1/4 Watt, tolerância 5%) - Cores: Marrom, Preto, Vermelho, Ouro
+[ ] 01x Resistor de 2 kΩ (1/4 Watt, tolerância 5%) - Cores: Vermelho, Preto, Vermelho, Ouro
+        * Nota: Os dois resistores formam o Divisor de Tensão protetor para
+          rebaixar os 5V do pino TX do Arduino para os 3.3V aceitos no pino RXD do HC-05.
+          (Se não tiver 2kΩ, pode usar 2 resistores de 1kΩ em série).
+
+-------------------------------------------------------------------------------
+4. ITENS ESPECÍFICOS - VERSÃO BBC MICRO:BIT (Rádio 2.4GHz / Acelerômetro)
+-------------------------------------------------------------------------------
+[ ] 02x Placas BBC micro:bit (V1 ou V2):
+        * Placa 1: Receptor instalado no Robô de Combate
+        * Placa 2: Transmissor na mão do Piloto (Controle Remoto por Inclinação)
+[ ] 01x Placa de Expansão para micro:bit (Edge Connector Breakout ou Sensor Shield):
+        * Dá acesso fácil com pinos macho/fêmea aos pinos P0, P1, P8, P12, 3V e GND
+[ ] 01x Suporte de 2 Pilhas AAA (3V) com conector JST (ou mini powerbank USB):
+        * Para alimentar o micro:bit transmissor portátil que fica na mão
+[ ] 01x Cabo Micro-USB para gravação do código via MakeCode ou MicroPython
+
+-------------------------------------------------------------------------------
+5. FERRAMENTAS E MATERIAIS DE MONTAGEM E TESTE RECOMENDADOS
+-------------------------------------------------------------------------------
+[ ] Ferro de solda (30W a 60W) e estanho com fluxo
+[ ] Fita isolante e/ou espaguete termoretrátil (heat shrink) de 2mm a 5mm
+[ ] Pistola de cola quente e bastões de silicone (ou fita dupla face espumada 3M VHB)
+[ ] Jogo de chaves de fenda / philips pequenas (para apertar os bornes do L298N)
+[ ] Multímetro digital simples (indispensável para testar continuidade e tensão)
+[ ] Carregador Balanceador para baterias LiPo (Ex: Carregador B3 compacto ou IMAX B6)
+[ ] Abraçadeiras plásticas (enforca-gato) para organização dos chicotes de fios
+
+===============================================================================
+Dica de Segurança:
+Nunca ligue os motores diretamente nos pinos de alimentação do Arduino/ESP32.
+Sempre confira a união dos terras (GND comum) antes de fechar o circuito!
+===============================================================================

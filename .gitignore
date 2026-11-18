@@ -1,0 +1,34 @@
+# Exclusão explícita do ESP32V2 solicitada pelo usuário
+ESP32V2/
+**/ESP32V2/
+**/ESP32V2/**
+
+# Arquivos compactados de distribuição
+*.zip
+
+# Flutter & Dart builds e caches
+**/build/
+**/.dart_tool/
+**/.pub-cache/
+**/.pub/
+**/.flutter-plugins
+**/.flutter-plugins-dependencies
+
+# IDEs e configurações locais
+**/.idea/
+**/.vscode/
+*.iml
+*.ipr
+*.iws
+
+# Python cache
+**/__pycache__/
+*.py[cod]
+
+# PlatformIO
+.pio/
+**/.pio/
+
+# Arquivos de sistema
+.DS_Store
+Thumbs.db

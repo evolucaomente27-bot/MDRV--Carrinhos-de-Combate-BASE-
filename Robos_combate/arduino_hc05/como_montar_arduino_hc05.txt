@@ -1,0 +1,133 @@
+===============================================================================
+    GUIA DE MONTAGEM PASSO A PASSO: ROBÔ COM ARDUINO (UNO/NANO) + HC-05 + L298N
+    Controle via Bluetooth pelo Aplicativo do Celular com Failsafe
+===============================================================================
+
+Este manual detalha o passo a passo exato para você montar, ligar os fios,
+montar o divisor de tensão protetor, gravar o código e pilotar o robô de batalha.
+
+-------------------------------------------------------------------------------
+PASSO 1: PREPARAÇÃO MECÂNICA E MOTORES
+-------------------------------------------------------------------------------
+1. Pegue os 02 motores DC (amarelos TT ou metálicos N20).
+2. Solde dois fios flexíveis em cada motor (vermelho e preto, ~15 cm).
+3. Fixe os motores no chassi e encaixe as rodas nos eixos.
+4. Apoie o robô em uma base elevada para que as rodas fiquem no ar durante os testes.
+
+-------------------------------------------------------------------------------
+PASSO 2: CONEXÃO DOS MOTORES NA PONTE H L298N
+-------------------------------------------------------------------------------
+1. Nos bornes de parafuso laterais da Ponte H L298N:
+   - Borne Esquerdo (OUT1 e OUT2): Ligue os fios do Motor Esquerdo.
+   - Borne Direito (OUT3 e OUT4): Ligue os fios do Motor Direito.
+2. Jumpers de Controle (ENA e ENB):
+   - Mantenha os DOIS jumpers pretos encaixados sobre os pinos ENA e ENB.
+3. Jumper do Regulador de 5V:
+   - Mantenha o jumper preto de 5V encaixado (localizado atrás do borne azul de 3 vias).
+
+-------------------------------------------------------------------------------
+PASSO 3: MONTAGEM DO MÓDULO HC-05 E DIVISOR DE TENSÃO NA PROTOBOARD
+-------------------------------------------------------------------------------
+* ATENÇÃO: O pino RXD do HC-05 funciona com 3.3V. Ligar os 5V do Arduino direto
+  nele pode queimar ou danificar o módulo com o tempo. Por isso, usamos o
+  Divisor de Tensão com 2 resistores: 1kΩ (R1) e 2kΩ (R2).
+
+1. Encaixe o Módulo Bluetooth HC-05 na protoboard.
+2. Alimentação do HC-05:
+   - Puxe um fio do pino "5V" do Arduino até o pino "VCC" do HC-05.
+   - Puxe um fio de qualquer pino "GND" do Arduino até o pino "GND" do HC-05.
+3. Sinal TX do HC-05 para Arduino RX:
+   - Ligue um fio do pino "TXD" do HC-05 diretamente no pino digital "D2" do Arduino.
+     (O sinal de 3.3V do HC-05 é lido com perfeição e 100% de segurança pelo Arduino).
+4. Divisor de Tensão do Sinal TX do Arduino para RX do HC-05:
+   - Ligue um fio do pino digital "D3" do Arduino até um dos lados do resistor de 1 kΩ.
+   - A outra ponta do resistor de 1 kΩ conecta-se a um nó comum:
+     * Deste nó, ligue um fio no pino "RXD" do HC-05.
+     * Deste mesmo nó, ligue um resistor de 2 kΩ que vai direto para o "GND".
+   - Resultado: a tensão cai de 5V para 3.33V seguros!
+
+-------------------------------------------------------------------------------
+PASSO 4: ALIMENTAÇÃO DA BATERIA E ARDUINO
+-------------------------------------------------------------------------------
+1. Polo Negativo (-) da Bateria:
+   - Ligue diretamente no borne "GND" do L298N.
+2. Polo Positivo (+) da Bateria:
+   - Ligue na Chave Geral e da chave até o borne "+12V" do L298N.
+3. Alimentando o Arduino:
+   - Ligue um fio vermelho do borne "+5V" do L298N até o pino "5V" (ou VIN) do Arduino.
+   - Ligue um fio preto do borne "GND" do L298N até o pino "GND" do Arduino.
+   * REGRA CRUCIAL: Todos os GNDs (Bateria + L298N + Arduino + HC-05) devem estar
+     unidos no mesmo potencial elétrico (Terra Comum).
+
+-------------------------------------------------------------------------------
+PASSO 5: SINAIS DE CONTROLE DOS MOTORES (ARDUINO ➔ L298N)
+-------------------------------------------------------------------------------
+Conecte os 4 pinos PWM do Arduino nos pinos de comando da Ponte H:
+
+  * Arduino pino D5 (PWM)  ----> pino IN1 da Ponte H (Motor Esquerdo Frente)
+  * Arduino pino D6 (PWM)  ----> pino IN2 da Ponte H (Motor Esquerdo Ré)
+  * Arduino pino D9 (PWM)  ----> pino IN3 da Ponte H (Motor Direito Frente)
+  * Arduino pino D10 (PWM) ----> pino IN4 da Ponte H (Motor Direito Ré)
+
+* Canal de Arma (Opcional):
+  * Arduino pino D4 ----> Entrada de sinal do Módulo Relé ou MOSFET da arma.
+
+-------------------------------------------------------------------------------
+PASSO 6: GRAVAÇÃO DO CÓDIGO NO ARDUINO
+-------------------------------------------------------------------------------
+1. Conecte o cabo USB do Arduino no computador (com a bateria desligada).
+2. Abra o Arduino IDE e abra o arquivo:
+   "arduino_hc05/robo_combate_arduino_hc05.ino"
+3. Em "Ferramentas" (Tools):
+   - Placa: Selecione "Arduino Uno" OU "Arduino Nano".
+   - Processador (se for Nano): Escolha "ATmega328P" (ou "ATmega328P (Old Bootloader)"
+     caso sua placa seja um clone chinês comum).
+   - Porta: Selecione a respectiva porta COM.
+4. Clique em "Carregar" (Upload).
+   * VANTAGEM: Como utilizamos a biblioteca SoftwareSerial nos pinos D2 e D3,
+     os pinos D0 (RX) e D1 (TX) estão 100% livres. Você PODE gravar o código
+     sem precisar desplugar nenhum fio do Bluetooth!
+
+-------------------------------------------------------------------------------
+PASSO 7: PAREAMENTO BLUETOOTH E CONFIGURAÇÃO NO CELULAR
+-------------------------------------------------------------------------------
+1. Desconecte o cabo USB e ligue a Chave Geral da bateria.
+2. Observe o LED vermelho do módulo HC-05: ele começará a piscar rápido (espera).
+3. No smartphone Android:
+   - Abra "Configurações" > "Bluetooth" e toque em "Procurar".
+   - Selecione o dispositivo chamado "HC-05" (ou "HC-06").
+   - Quando pedir a senha (PIN), digite: 1234 (ou 0000) e confirme o pareamento.
+4. Abra o aplicativo "Bluetooth RC Controller" (disponível na Google Play Store):
+   - Toque no ícone de engrenagem / configurações ou no botão "Connect".
+   - Selecione o "HC-05" na lista de dispositivos pareados.
+   - O ícone de conexão no aplicativo ficará VERDE e o LED do HC-05 passará a
+     piscar pausado a cada 2 segundos. Conexão estabelecida!
+
+-------------------------------------------------------------------------------
+PASSO 8: COMANDOS E TESTE DE FAILSAFE
+-------------------------------------------------------------------------------
+1. No aplicativo:
+   - Pressione os direcionais (Frente, Ré, Esquerda, Direita).
+   - O robô responde imediatamente. Ao soltar, os motores freiam.
+   - O botão de ação / farol / buzina liga e desliga a arma (pino D4).
+   - O seletor de velocidade ajusta o PWM de aceleração.
+2. Teste de Failsafe:
+   - Acione os motores e, com as rodas girando, force o fechamento do app ou
+     desligue o Bluetooth do celular.
+   - Os motores devem parar imediatamente em até 500ms!
+
+-------------------------------------------------------------------------------
+RESOLUÇÃO DE DÚVIDAS COMUNS (TROUBLESHOOTING)
+-------------------------------------------------------------------------------
+* Problema: O LED do HC-05 pisca rápido e não para, mesmo clicando em conectar no app.
+  -> Solução: O HC-05 não foi pareado previamente no menu Bluetooth do Android.
+     Pareie primeiro no Android com o PIN 1234 antes de tentar abrir o app.
+
+* Problema: O robô gira para a esquerda quando mando ir para frente.
+  -> Solução: O motor esquerdo está girando invertido. Inverta a posição dos dois
+     fios desse motor no borne OUT1/OUT2 do L298N.
+
+* Problema: O código não compila dizendo que faltou biblioteca.
+  -> Solução: A biblioteca SoftwareSerial já é nativa do Arduino. Certifique-se de
+     ter selecionado uma placa padrão (Arduino Uno ou Nano) em Ferramentas.
+===============================================================================

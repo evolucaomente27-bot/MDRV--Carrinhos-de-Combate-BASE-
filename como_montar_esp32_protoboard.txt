@@ -1,0 +1,112 @@
+===============================================================================
+  GUIA DE MONTAGEM: ESP32 NA PROTOBOARD COM MÓDULO FONTE MB102 + L298N
+  Alimentação Isolada (Zero Brownouts), Wi-Fi Web Controller e Failsafe
+===============================================================================
+
+Este manual ensina como montar o robô de combate utilizando o ESP32 instalado em 
+uma PROTOBOARD (matriz de contatos de 400 ou 830 pontos) em conjunto com o 
+MÓDULO FONTE DE ALIMENTAÇÃO MB102 (3.3V / 5V).
+
+-------------------------------------------------------------------------------
+🛡️ POR QUE ADICIONAR O MÓDULO MB102 NO ROBÔ DE COMBATE?
+-------------------------------------------------------------------------------
+O maior problema em robôs de combate controlados por ESP32 é o "BROWNOUT":
+- Quando os motores arrancam, invertem o sentido ou empurram o adversário, eles
+  puxam picos de 2A a 5A da bateria.
+- O regulador interno 78M05 da Ponte H L298N não aguenta esses picos e sua tensão
+  cai abruptamente, além de deixar passar ruído elétrico das escovas dos motores.
+- O ESP32 detecta a queda e REINICIA no meio da luta (Brownout Detector Reset).
+
+COM O MÓDULO FONTE MB102 ESSE PROBLEMA É 100% ELIMINADO:
+1. O MB102 possui reguladores dedicados AMS1117 com capacitores de filtragem.
+2. Ele encaixa diretamente nas extremidades da protoboard, alimentando os barramentos.
+3. A saída de 5V da Ponte H L298N fica TOTALMENTE DESCONECTADA! O L298N cuida apenas
+   da força bruta dos motores, enquanto o MB102 alimenta o ESP32 com 5V cravados.
+4. O MB102 possui um botão liga/desliga (Power Switch) próprio com LED indicador verde.
+
+-------------------------------------------------------------------------------
+1. ENCAIXE MECÂNICO NA PROTOBOARD (ESP32 E MB102)
+-------------------------------------------------------------------------------
+A) Encaixando o Módulo MB102:
+   - O MB102 tem 4 pares de pinos metálicos na parte de baixo, espaçados exatamente
+     para casar com os barramentos laterais (+ e -) da ponta da protoboard.
+   - Pressione o MB102 firmemente na extremidade superior da protoboard.
+   - Certifique-se de que a polaridade coincide:
+     * O pino marcado com (+) do MB102 entra na trilha vermelha (+).
+     * O pino marcado com (-) do MB102 entra na trilha azul/preta (-).
+
+B) Configuração dos Jumpers Amarelos do MB102:
+   - O MB102 tem dois conjuntos de pinos com jumpers amarelos (um para cada trilha).
+   - Posicione AMBOS os jumpers amarelos na posição "5V" (lado esquerdo).
+   - Agora, os barramentos laterais da protoboard fornecerão 5V regulados.
+
+C) Encaixando o ESP32:
+   - Posicione o ESP32 no centro da protoboard, atravessando a VALETA CENTRAL divisória.
+   - Pressione suavemente até que todos os pinos penetrem nos contatos.
+   - Deixe o conector USB voltado para a extremidade inferior (livre para o cabo).
+
+-------------------------------------------------------------------------------
+2. FIAÇÃO DA ALIMENTAÇÃO (BATERIA ➔ CHAVE ➔ MB102 E L298N)
+-------------------------------------------------------------------------------
+Utilize um Conector Plug P4 Macho com Borne (2.1mm x 5.5mm) para ligar a bateria
+ao MB102 de forma profissional:
+
+1. Polo Positivo (+ / Vermelho) da Bateria (7.4V LiPo ou 9V-12V):
+   - Bateria (+) ➔ Chave Geral (Kill Switch).
+   - Da saída da Chave Geral, divida em dois fios:
+     * Fio 1 ➔ Borne "+12V" da Ponte H L298N.
+     * Fio 2 ➔ Borne Positivo (+) do Plug P4 do MB102.
+
+2. Polo Negativo (- / Preto) da Bateria (Terra Comum / GND):
+   - Do polo (-) da bateria, divida em dois fios:
+     * Fio 1 ➔ Borne "GND" da Ponte H L298N.
+     * Fio 2 ➔ Borne Negativo (-) do Plug P4 do MB102.
+
+3. Conecte o Plug P4 macho na entrada Jack DC do MB102.
+   * Agora, o terra (GND) é unificado entre a bateria, o L298N e a protoboard!
+
+-------------------------------------------------------------------------------
+3. ALIMENTANDO O ESP32 PELA PROTOBOARD
+-------------------------------------------------------------------------------
+Com o MB102 energizando os barramentos da protoboard com 5V estabilizados:
+
+1. Fio Vermelho: Espete um jumper da trilha vermelha (+) da protoboard até o furo
+   ao lado do pino "VIN" (ou 5V) do ESP32.
+2. Fio Preto: Espete um jumper da trilha azul (-) da protoboard até o furo
+   ao lado do pino "GND" do ESP32.
+
+⚠️ REGRA DE OURO (MUITO IMPORTANTE):
+   O borne de saída "+5V" da Ponte H L298N deve ficar VAZIO / SEM NENHUM FIO!
+   Não ligue o 5V do L298N na protoboard nem no ESP32, pois o MB102 já fornece
+   5V limpos e protegidos.
+
+-------------------------------------------------------------------------------
+4. SINAIS DE CONTROLE PWM (ESP32 ➔ PONTE H L298N)
+-------------------------------------------------------------------------------
+Espete 4 jumpers macho-fêmea nos furos livres da protoboard ao lado do ESP32:
+
+  * Fileira do pino D18 (GPIO 18) ----> pino IN1 do L298N (Motor Esquerdo Frente)
+  * Fileira do pino D19 (GPIO 19) ----> pino IN2 do L298N (Motor Esquerdo Ré)
+  * Fileira do pino D22 (GPIO 22) ----> pino IN3 do L298N (Motor Direito Frente)
+  * Fileira do pino D23 (GPIO 23) ----> pino IN4 do L298N (Motor Direito Ré)
+
+* Jumpers pretos de velocidade ENA e ENB do L298N: MANTENHA ENCAIXADOS.
+
+-------------------------------------------------------------------------------
+5. LIGAÇÃO DOS MOTORES NA PONTE H
+-------------------------------------------------------------------------------
+- Motor Esquerdo ➔ Parafuse nos bornes OUT1 e OUT2 do L298N.
+- Motor Direito  ➔ Parafuse nos bornes OUT3 e OUT4 do L298N.
+
+-------------------------------------------------------------------------------
+6. COMO TESTAR E OPERAR O CIRCUITO
+-------------------------------------------------------------------------------
+1. Ligue a Chave Geral da bateria.
+2. Pressione o botão do MB102 (o LED verde do MB102 acenderá).
+3. O LED onboard do ESP32 piscará e o ponto de acesso Wi-Fi será iniciado.
+4. No celular, conecte na rede:
+   - Versão V1: "Robo-Combate" ➔ Acesse http://192.168.4.1
+   - Versão V2: "Robo-Combate-V2" ➔ Acesse http://192.168.4.1
+5. Acelere os motores com o robô no ar: observe que o ESP32 não reinicia mesmo
+   com acelerações bruscas e frenagens imediatas!
+===============================================================================

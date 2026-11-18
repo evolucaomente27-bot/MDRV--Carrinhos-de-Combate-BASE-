@@ -1,0 +1,523 @@
+import os
+import shutil
+from playwright.sync_api import sync_playwright
+
+HTML_ROBOBIT = """<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Arial, sans-serif; }
+  body {
+    width: 1920px;
+    height: 1080px;
+    background-color: #0b1120;
+    background-image: radial-gradient(#1e293b 1.5px, transparent 1.5px);
+    background-size: 28px 28px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+    color: #f8fafc;
+  }
+  
+  .header {
+    background: #020617;
+    color: white;
+    padding: 18px 48px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 4px solid #10b981;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+  }
+  .header h1 { font-size: 28px; letter-spacing: 1px; display: flex; align-items: center; gap: 14px; font-weight: 800; }
+  .header .badge {
+    background: #10b981;
+    color: #020617;
+    font-size: 14px;
+    font-weight: 900;
+    padding: 7px 18px;
+    border-radius: 8px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+  }
+  .header .subtitle { font-size: 15px; color: #94a3b8; margin-top: 3px; }
+
+  svg {
+    width: 1920px;
+    height: 990px;
+    position: absolute;
+    top: 86px;
+    left: 0;
+  }
+
+  .legend-box {
+    position: absolute;
+    bottom: 24px;
+    left: 48px;
+    background: rgba(15, 23, 42, 0.95);
+    border: 2px solid #334155;
+    border-radius: 14px;
+    padding: 18px 24px;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.5);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 13.5px;
+    max-width: 600px;
+  }
+  .legend-title { font-weight: 800; font-size: 16px; color: #38bdf8; margin-bottom: 2px; border-bottom: 2px solid #334155; padding-bottom: 5px; }
+  .legend-item { display: flex; align-items: center; gap: 10px; color: #cbd5e1; }
+  .legend-color { width: 24px; height: 8px; border-radius: 4px; flex-shrink: 0; }
+
+  .notes-box {
+    position: absolute;
+    bottom: 24px;
+    right: 48px;
+    background: rgba(6, 78, 59, 0.85);
+    border: 2px solid #10b981;
+    border-radius: 14px;
+    padding: 18px 24px;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.4);
+    max-width: 620px;
+    font-size: 13px;
+    color: #ecfdf5;
+    line-height: 1.5;
+  }
+  .notes-box strong { color: #34d399; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <h1><span>🤖</span> DIAGRAMA DE MONTAGEM: BBC MICRO:BIT + SHIELD 4TRONIX ROBO:BIT</h1>
+    <div class="subtitle">Base de Robótica de Combate com Conector de Borda Direto, Driver Duplo Integrado e Rádio 2.4GHz</div>
+  </div>
+  <div class="badge">SHIELD ROBO:BIT MK3</div>
+</div>
+
+<div class="legend-box">
+  <div class="legend-title">Vantagens & Conexões do Shield Robo:Bit</div>
+  <div class="legend-item"><div class="legend-color" style="background:#10b981;"></div><strong>Zero Fios de Placa:</strong> micro:bit conecta-se direto no slot de borda vertical (sem protoboard).</div>
+  <div class="legend-item"><div class="legend-color" style="background:#38bdf8;"></div><strong>Bornes de Parafuso:</strong> Motores DC parafusados firmemente nos blocos LEFT e RIGHT.</div>
+  <div class="legend-item"><div class="legend-color" style="background:#ef4444;"></div><strong>Alimentação 6V / 7.4V:</strong> Suporte de 4x Pilhas AA ou LiPo 2S com Chave Liga/Desliga integrada.</div>
+  <div class="legend-item"><div class="legend-color" style="background:#f59e0b;"></div><strong>Pino P16 (Expansão):</strong> Saída digital para gatilho da arma de combate (MOSFET / Relé / Servo).</div>
+  <div class="legend-item"><div class="legend-color" style="background:#a855f7;"></div><strong>Pinos Internos:</strong> Motor Esquerdo (P0 Speed + P8 Dir) | Motor Direito (P1 Speed + P12 Dir).</div>
+</div>
+
+<div class="notes-box">
+  <strong>💡 Dicas Rápidas de Combate e Montagem:</strong><br>
+  - <strong>Inversão de Roda:</strong> Se um motor girar ao contrário ao acelerar, basta inverter os dois fios daquele motor no borne parafusável.<br>
+  - <strong>Extensão MakeCode:</strong> Adicione o pacote <code>Robobit</code> (da 4tronix) no MakeCode para controle nativo por blocos.<br>
+  - <strong>Failsafe Watchdog:</strong> Se perder o sinal do transmissor por mais de 400ms, os motores cortam a tração instantaneamente.<br>
+  - <strong>Chave Integrada:</strong> Sempre desligue a chave ON/OFF do shield antes de plugar o micro:bit no conector de borda!
+</div>
+
+<svg viewBox="0 0 1920 990">
+  <defs>
+    <filter id="shadow" x="-10%" y="-10%" width="130%" height="130%">
+      <feDropShadow dx="4" dy="8" stdDeviation="8" flood-color="#000000" flood-opacity="0.6"/>
+    </filter>
+    <filter id="wire-shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="2" dy="4" stdDeviation="3" flood-color="#000000" flood-opacity="0.5"/>
+    </filter>
+    <linearGradient id="shield-grad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#14532d"/>
+      <stop offset="50%" stop-color="#0f3e22"/>
+      <stop offset="100%" stop-color="#052e16"/>
+    </linearGradient>
+    <linearGradient id="motor-grad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#fde047"/>
+      <stop offset="60%" stop-color="#eab308"/>
+      <stop offset="100%" stop-color="#ca8a04"/>
+    </linearGradient>
+    <linearGradient id="wheel-grad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#334155"/>
+      <stop offset="50%" stop-color="#1e293b"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+    <linearGradient id="battery-grad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e293b"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+    <linearGradient id="mosfet-grad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#991b1b"/>
+      <stop offset="100%" stop-color="#450a0a"/>
+    </linearGradient>
+  </defs>
+
+  <!-- ======================================================== -->
+  <!-- 1. FIOS DE LIGAÇÃO (CAMADA INFERIOR)                     -->
+  <!-- ======================================================== -->
+  <!-- Fios Motor Esquerdo (X: 160..300, Y: 220 ➔ X: 640, Y: 330) -->
+  <path d="M 280,240 C 440,240 500,320 635,320" fill="none" stroke="#ef4444" stroke-width="6" stroke-linecap="round" filter="url(#wire-shadow)"/>
+  <path d="M 280,260 C 450,260 510,340 635,340" fill="none" stroke="#0f172a" stroke-width="6" stroke-linecap="round" filter="url(#wire-shadow)"/>
+  
+  <!-- Fios Motor Direito (X: 1640..1760, Y: 220 ➔ X: 1285, Y: 330) -->
+  <path d="M 1640,240 C 1480,240 1420,320 1285,320" fill="none" stroke="#ef4444" stroke-width="6" stroke-linecap="round" filter="url(#wire-shadow)"/>
+  <path d="M 1640,260 C 1470,260 1410,340 1285,340" fill="none" stroke="#0f172a" stroke-width="6" stroke-linecap="round" filter="url(#wire-shadow)"/>
+
+  <!-- Fios Bateria (X: 740, Y: 680 ➔ X: 840, Y: 560) -->
+  <path d="M 800,680 C 800,620 830,590 850,560" fill="none" stroke="#ef4444" stroke-width="7" stroke-linecap="round" filter="url(#wire-shadow)"/>
+  <path d="M 840,680 C 840,625 860,595 870,560" fill="none" stroke="#0f172a" stroke-width="7" stroke-linecap="round" filter="url(#wire-shadow)"/>
+
+  <!-- Fios MOSFET Arma (X: 1080, Y: 560 ➔ X: 1180, Y: 680) -->
+  <path d="M 1070,560 C 1070,610 1140,640 1160,680" fill="none" stroke="#f59e0b" stroke-width="5" stroke-linecap="round" filter="url(#wire-shadow)"/>
+  <path d="M 1090,560 C 1090,610 1180,640 1200,680" fill="none" stroke="#ef4444" stroke-width="5" stroke-linecap="round" filter="url(#wire-shadow)"/>
+  <path d="M 1110,560 C 1110,610 1220,640 1240,680" fill="none" stroke="#0f172a" stroke-width="5" stroke-linecap="round" filter="url(#wire-shadow)"/>
+
+  <!-- ======================================================== -->
+  <!-- 2. PLACA SHIELD 4TRONIX ROBO:BIT (CENTRAL)               -->
+  <!-- ======================================================== -->
+  <g id="robobit-shield" transform="translate(620, 160)" filter="url(#shadow)">
+    <!-- Base PCB do Shield (Verde Robótica) -->
+    <rect x="0" y="0" width="680" height="420" rx="20" fill="url(#shield-grad)" stroke="#16a34a" stroke-width="3"/>
+    
+    <!-- Trilhas / Silk Screen Decorativo -->
+    <rect x="15" y="15" width="650" height="390" rx="14" fill="none" stroke="#22c55e" stroke-width="1.5" stroke-dasharray="8 6" opacity="0.4"/>
+    <text x="340" y="45" font-size="20" font-weight="900" fill="#f8fafc" text-anchor="middle" letter-spacing="3">4TRONIX ROBO:BIT BUGGY SHIELD</text>
+    <text x="340" y="65" font-size="12" font-weight="700" fill="#4ade80" text-anchor="middle" letter-spacing="1">EXPANSÃO PROFISSIONAL DE MOTORES & SENSORES</text>
+
+    <!-- Furos de Montagem M3 nos Cantos -->
+    <circle cx="28" cy="28" r="8" fill="#0f172a" stroke="#ca8a04" stroke-width="3"/>
+    <circle cx="652" cy="28" r="8" fill="#0f172a" stroke="#ca8a04" stroke-width="3"/>
+    <circle cx="28" cy="392" r="8" fill="#0f172a" stroke="#ca8a04" stroke-width="3"/>
+    <circle cx="652" cy="392" r="8" fill="#0f172a" stroke="#ca8a04" stroke-width="3"/>
+
+    <!-- SLOT DE BORDA VERTICAL (EDGE CONNECTOR) -->
+    <rect x="150" y="80" width="380" height="32" rx="4" fill="#09090b" stroke="#27272a" stroke-width="2"/>
+    <!-- Pinos internos do conector -->
+    <g fill="#ca8a04">
+      <rect x="160" y="85" width="5" height="22"/>
+      <rect x="175" y="85" width="5" height="22"/>
+      <rect x="190" y="85" width="5" height="22"/>
+      <rect x="205" y="85" width="5" height="22"/>
+      <rect x="220" y="85" width="5" height="22"/>
+      <rect x="235" y="85" width="5" height="22"/>
+      <rect x="250" y="85" width="5" height="22"/>
+      <rect x="265" y="85" width="5" height="22"/>
+      <rect x="280" y="85" width="5" height="22"/>
+      <rect x="295" y="85" width="5" height="22"/>
+      <rect x="310" y="85" width="5" height="22"/>
+      <rect x="325" y="85" width="5" height="22"/>
+      <rect x="340" y="85" width="5" height="22"/>
+      <rect x="355" y="85" width="5" height="22"/>
+      <rect x="370" y="85" width="5" height="22"/>
+      <rect x="385" y="85" width="5" height="22"/>
+      <rect x="400" y="85" width="5" height="22"/>
+      <rect x="415" y="85" width="5" height="22"/>
+      <rect x="430" y="85" width="5" height="22"/>
+      <rect x="445" y="85" width="5" height="22"/>
+      <rect x="460" y="85" width="5" height="22"/>
+      <rect x="475" y="85" width="5" height="22"/>
+      <rect x="490" y="85" width="5" height="22"/>
+      <rect x="505" y="85" width="5" height="22"/>
+    </g>
+
+    <!-- BBC MICRO:BIT ENCAIXADO NO SLOT (VISTO DE FRENTE/TOPO) -->
+    <g id="microbit-inserted" transform="translate(170, -110)">
+      <rect x="0" y="0" width="340" height="200" rx="20" fill="#18181b" stroke="#3f3f46" stroke-width="3"/>
+      <!-- Top banner microbit -->
+      <path d="M 0,20 Q 0,0 20,0 H 320 Q 340,0 340,20 V 38 H 0 Z" fill="#0284c7"/>
+      <text x="170" y="26" font-size="16" font-weight="900" fill="#ffffff" text-anchor="middle" letter-spacing="3">micro:bit</text>
+      
+      <!-- Furos do microbit -->
+      <circle cx="28" cy="20" r="6" fill="#ffffff" opacity="0.3"/>
+      <circle cx="312" cy="20" r="6" fill="#ffffff" opacity="0.3"/>
+
+      <!-- Matriz 5x5 de LEDs (Mostrando Ícone TARGET / ARROW_N) -->
+      <g transform="translate(125, 60)">
+        <!-- Linha 1 -->
+        <circle cx="0" cy="0" r="6" fill="#334155"/>
+        <circle cx="22" cy="0" r="6" fill="#334155"/>
+        <circle cx="44" cy="0" r="7" fill="#ef4444"/>
+        <circle cx="66" cy="0" r="6" fill="#334155"/>
+        <circle cx="88" cy="0" r="6" fill="#334155"/>
+        <!-- Linha 2 -->
+        <circle cx="0" cy="22" r="6" fill="#334155"/>
+        <circle cx="22" cy="22" r="7" fill="#ef4444"/>
+        <circle cx="44" cy="22" r="7" fill="#ef4444"/>
+        <circle cx="66" cy="22" r="7" fill="#ef4444"/>
+        <circle cx="88" cy="22" r="6" fill="#334155"/>
+        <!-- Linha 3 -->
+        <circle cx="0" cy="44" r="7" fill="#ef4444"/>
+        <circle cx="22" cy="44" r="6" fill="#334155"/>
+        <circle cx="44" cy="44" r="7" fill="#ef4444"/>
+        <circle cx="66" cy="44" r="6" fill="#334155"/>
+        <circle cx="88" cy="44" r="7" fill="#ef4444"/>
+        <!-- Linha 4 -->
+        <circle cx="0" cy="66" r="6" fill="#334155"/>
+        <circle cx="22" cy="66" r="6" fill="#334155"/>
+        <circle cx="44" cy="66" r="7" fill="#ef4444"/>
+        <circle cx="66" cy="66" r="6" fill="#334155"/>
+        <circle cx="88" cy="66" r="6" fill="#334155"/>
+        <!-- Linha 5 -->
+        <circle cx="0" cy="88" r="6" fill="#334155"/>
+        <circle cx="22" cy="88" r="6" fill="#334155"/>
+        <circle cx="44" cy="88" r="7" fill="#ef4444"/>
+        <circle cx="66" cy="88" r="6" fill="#334155"/>
+        <circle cx="88" cy="88" r="6" fill="#334155"/>
+      </g>
+
+      <!-- Botão A -->
+      <circle cx="45" cy="115" r="16" fill="#27272a" stroke="#52525b" stroke-width="2"/>
+      <circle cx="45" cy="115" r="11" fill="#09090b"/>
+      <text x="45" y="148" font-size="13" font-weight="900" fill="#a1a1aa" text-anchor="middle">A (TURBO)</text>
+
+      <!-- Botão B -->
+      <circle cx="295" cy="115" r="16" fill="#27272a" stroke="#52525b" stroke-width="2"/>
+      <circle cx="295" cy="115" r="11" fill="#09090b"/>
+      <text x="295" y="148" font-size="13" font-weight="900" fill="#a1a1aa" text-anchor="middle">B (180°)</text>
+
+      <!-- Antena Rádio Integrada no microbit -->
+      <rect x="20" y="38" width="50" height="14" rx="2" fill="#eab308" opacity="0.85"/>
+      <text x="45" y="49" font-size="9" font-weight="bold" fill="#000" text-anchor="middle">2.4GHz</text>
+
+      <!-- Borda dourada de encaixe -->
+      <rect x="10" y="192" width="320" height="8" fill="#eab308"/>
+    </g>
+
+    <!-- BORNE DE PARAFUSO ESQUERDO (MOTOR LEFT) -->
+    <g transform="translate(15, 140)">
+      <rect x="0" y="0" width="45" height="50" rx="6" fill="#15803d" stroke="#22c55e" stroke-width="2"/>
+      <!-- Parafusos metálicos -->
+      <circle cx="22" cy="15" r="8" fill="#94a3b8" stroke="#475569" stroke-width="1.5"/>
+      <line x1="16" y1="15" x2="28" y2="15" stroke="#1e293b" stroke-width="2"/>
+      <circle cx="22" cy="35" r="8" fill="#94a3b8" stroke="#475569" stroke-width="1.5"/>
+      <line x1="16" y1="35" x2="28" y2="35" stroke="#1e293b" stroke-width="2"/>
+      <text x="55" y="24" font-size="13" font-weight="800" fill="#f8fafc">MOTOR ESQ</text>
+      <text x="55" y="42" font-size="11" font-weight="bold" fill="#86efac">(P0 PWM / P8 DIR)</text>
+    </g>
+
+    <!-- BORNE DE PARAFUSO DIREITO (MOTOR RIGHT) -->
+    <g transform="translate(620, 140)">
+      <rect x="0" y="0" width="45" height="50" rx="6" fill="#15803d" stroke="#22c55e" stroke-width="2"/>
+      <!-- Parafusos metálicos -->
+      <circle cx="22" cy="15" r="8" fill="#94a3b8" stroke="#475569" stroke-width="1.5"/>
+      <line x1="16" y1="15" x2="28" y2="15" stroke="#1e293b" stroke-width="2"/>
+      <circle cx="22" cy="35" r="8" fill="#94a3b8" stroke="#475569" stroke-width="1.5"/>
+      <line x1="16" y1="35" x2="28" y2="35" stroke="#1e293b" stroke-width="2"/>
+      <text x="-12" y="24" font-size="13" font-weight="800" fill="#f8fafc" text-anchor="end">MOTOR DIR</text>
+      <text x="-12" y="42" font-size="11" font-weight="bold" fill="#86efac" text-anchor="end">(P1 PWM / P12 DIR)</text>
+    </g>
+
+    <!-- CHIP PONTE H INTEGRADO (DRV8833 / MOSFETs) -->
+    <g transform="translate(290, 160)">
+      <rect x="0" y="0" width="100" height="80" rx="6" fill="#0f172a" stroke="#334155" stroke-width="2"/>
+      <!-- Pinos do chip IC -->
+      <g fill="#94a3b8">
+        <rect x="-6" y="10" width="6" height="4"/>
+        <rect x="-6" y="25" width="6" height="4"/>
+        <rect x="-6" y="40" width="6" height="4"/>
+        <rect x="-6" y="55" width="6" height="4"/>
+        <rect x="100" y="10" width="6" height="4"/>
+        <rect x="100" y="25" width="6" height="4"/>
+        <rect x="100" y="40" width="6" height="4"/>
+        <rect x="100" y="55" width="6" height="4"/>
+      </g>
+      <text x="50" y="38" font-size="12" font-weight="900" fill="#f8fafc" text-anchor="middle">DRV8833</text>
+      <text x="50" y="54" font-size="9" font-weight="bold" fill="#38bdf8" text-anchor="middle">DUAL H-BRIDGE</text>
+    </g>
+
+    <!-- CHAVE LIGA/DESLIGA GERAL (POWER SWITCH) -->
+    <g transform="translate(50, 310)">
+      <rect x="0" y="0" width="80" height="40" rx="6" fill="#27272a" stroke="#52525b" stroke-width="1.5"/>
+      <rect x="10" y="8" width="60" height="24" rx="4" fill="#09090b"/>
+      <!-- Manopla deslizante na posição ON -->
+      <rect x="42" y="5" width="26" height="30" rx="4" fill="#ef4444" stroke="#f87171" stroke-width="1.5"/>
+      <text x="40" y="-10" font-size="12" font-weight="bold" fill="#f8fafc" text-anchor="middle">CHAVE GERAL</text>
+      <text x="24" y="24" font-size="10" font-weight="900" fill="#22c55e">ON</text>
+      <!-- LED Power -->
+      <circle cx="105" cy="20" r="6" fill="#22c55e"/>
+      <circle cx="105" cy="20" r="10" fill="#22c55e" opacity="0.3"/>
+      <text x="120" y="24" font-size="11" font-weight="bold" fill="#4ade80">PWR LED</text>
+    </g>
+
+    <!-- BORNE DE ALIMENTAÇÃO DA BATERIA (VIN / GND) -->
+    <g transform="translate(210, 320)">
+      <rect x="0" y="0" width="60" height="45" rx="6" fill="#15803d" stroke="#22c55e" stroke-width="2"/>
+      <circle cx="18" cy="22" r="7" fill="#94a3b8" stroke="#475569" stroke-width="1.5"/>
+      <line x1="12" y1="22" x2="24" y2="22" stroke="#1e293b" stroke-width="2"/>
+      <circle cx="42" cy="22" r="7" fill="#94a3b8" stroke="#475569" stroke-width="1.5"/>
+      <line x1="36" y1="22" x2="48" y2="22" stroke="#1e293b" stroke-width="2"/>
+      <text x="18" y="58" font-size="11" font-weight="900" fill="#ef4444" text-anchor="middle">+BAT</text>
+      <text x="42" y="58" font-size="11" font-weight="900" fill="#94a3b8" text-anchor="middle">GND</text>
+      <text x="30" y="-8" font-size="11" font-weight="bold" fill="#f8fafc" text-anchor="middle">ENTRADA 6V-7.4V</text>
+    </g>
+
+    <!-- BARRA DE PINOS DE EXPANSÃO (P16, 3V, GND) PARA ARMA -->
+    <g transform="translate(420, 310)">
+      <rect x="0" y="0" width="130" height="55" rx="6" fill="#0f172a" stroke="#334155" stroke-width="1.5"/>
+      <!-- Pinos Macho Dourados -->
+      <circle cx="30" cy="20" r="5" fill="#f59e0b"/>
+      <circle cx="65" cy="20" r="5" fill="#ef4444"/>
+      <circle cx="100" cy="20" r="5" fill="#0f172a" stroke="#cbd5e1" stroke-width="1.5"/>
+      <text x="30" y="42" font-size="11" font-weight="bold" fill="#f59e0b" text-anchor="middle">P16</text>
+      <text x="65" y="42" font-size="11" font-weight="bold" fill="#ef4444" text-anchor="middle">3.3V</text>
+      <text x="100" y="42" font-size="11" font-weight="bold" fill="#cbd5e1" text-anchor="middle">GND</text>
+      <text x="65" y="-8" font-size="11" font-weight="bold" fill="#38bdf8" text-anchor="middle">PORTA DA ARMA</text>
+    </g>
+  </g>
+
+  <!-- ======================================================== -->
+  <!-- 3. MOTOR ESQUERDO + RODA (LADO ESQUERDO)                 -->
+  <!-- ======================================================== -->
+  <g id="motor-left" transform="translate(100, 160)" filter="url(#shadow)">
+    <!-- Roda de Borracha Preta -->
+    <rect x="0" y="10" width="55" height="180" rx="14" fill="url(#wheel-grad)" stroke="#475569" stroke-width="2"/>
+    <!-- Frisos do Pneu -->
+    <line x1="0" y1="35" x2="55" y2="35" stroke="#0f172a" stroke-width="3"/>
+    <line x1="0" y1="65" x2="55" y2="65" stroke="#0f172a" stroke-width="3"/>
+    <line x1="0" y1="95" x2="55" y2="95" stroke="#0f172a" stroke-width="3"/>
+    <line x1="0" y1="125" x2="55" y2="125" stroke="#0f172a" stroke-width="3"/>
+    <line x1="0" y1="155" x2="55" y2="155" stroke="#0f172a" stroke-width="3"/>
+
+    <!-- Eixo Metálico -->
+    <rect x="55" y="90" width="25" height="20" fill="#94a3b8" stroke="#475569" stroke-width="1.5"/>
+
+    <!-- Caixa de Redução Amarela (TT Motor) -->
+    <rect x="80" y="45" width="100" height="110" rx="8" fill="url(#motor-grad)" stroke="#ca8a04" stroke-width="2"/>
+    <text x="130" y="95" font-size="13" font-weight="900" fill="#713f12" text-anchor="middle">REDUÇÃO</text>
+    <text x="130" y="112" font-size="12" font-weight="800" fill="#713f12" text-anchor="middle">1:48</text>
+
+    <!-- Corpo Metálico do Motor DC -->
+    <rect x="180" y="60" width="70" height="80" rx="10" fill="#cbd5e1" stroke="#94a3b8" stroke-width="2"/>
+    <circle cx="215" cy="100" r="18" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1.5"/>
+    <text x="215" y="104" font-size="10" font-weight="bold" fill="#475569" text-anchor="middle">DC 6V</text>
+
+    <!-- Terminais de Solda do Motor -->
+    <rect x="250" y="75" width="12" height="10" fill="#ca8a04"/>
+    <rect x="250" y="115" width="12" height="10" fill="#ca8a04"/>
+
+    <text x="130" y="185" font-size="15" font-weight="900" fill="#f8fafc" text-anchor="middle">MOTOR ESQUERDO</text>
+  </g>
+
+  <!-- ======================================================== -->
+  <!-- 4. MOTOR DIREITO + RODA (LADO DIREITO)                   -->
+  <!-- ======================================================== -->
+  <g id="motor-right" transform="translate(1550, 160)" filter="url(#shadow)">
+    <!-- Terminais de Solda do Motor -->
+    <rect x="0" y="75" width="12" height="10" fill="#ca8a04"/>
+    <rect x="0" y="115" width="12" height="10" fill="#ca8a04"/>
+
+    <!-- Corpo Metálico do Motor DC -->
+    <rect x="12" y="60" width="70" height="80" rx="10" fill="#cbd5e1" stroke="#94a3b8" stroke-width="2"/>
+    <circle cx="47" cy="100" r="18" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1.5"/>
+    <text x="47" y="104" font-size="10" font-weight="bold" fill="#475569" text-anchor="middle">DC 6V</text>
+
+    <!-- Caixa de Redução Amarela (TT Motor) -->
+    <rect x="82" y="45" width="100" height="110" rx="8" fill="url(#motor-grad)" stroke="#ca8a04" stroke-width="2"/>
+    <text x="132" y="95" font-size="13" font-weight="900" fill="#713f12" text-anchor="middle">REDUÇÃO</text>
+    <text x="132" y="112" font-size="12" font-weight="800" fill="#713f12" text-anchor="middle">1:48</text>
+
+    <!-- Eixo Metálico -->
+    <rect x="182" y="90" width="25" height="20" fill="#94a3b8" stroke="#475569" stroke-width="1.5"/>
+
+    <!-- Roda de Borracha Preta -->
+    <rect x="207" y="10" width="55" height="180" rx="14" fill="url(#wheel-grad)" stroke="#475569" stroke-width="2"/>
+    <!-- Frisos do Pneu -->
+    <line x1="207" y1="35" x2="262" y2="35" stroke="#0f172a" stroke-width="3"/>
+    <line x1="207" y1="65" x2="262" y2="65" stroke="#0f172a" stroke-width="3"/>
+    <line x1="207" y1="95" x2="262" y2="95" stroke="#0f172a" stroke-width="3"/>
+    <line x1="207" y1="125" x2="262" y2="125" stroke="#0f172a" stroke-width="3"/>
+    <line x1="207" y1="155" x2="262" y2="155" stroke="#0f172a" stroke-width="3"/>
+
+    <text x="132" y="185" font-size="15" font-weight="900" fill="#f8fafc" text-anchor="middle">MOTOR DIREITO</text>
+  </g>
+
+  <!-- ======================================================== -->
+  <!-- 5. PACK DE BATERIAS (4x AA 6V OU LIPO 2S 7.4V)           -->
+  <!-- ======================================================== -->
+  <g id="battery-pack" transform="translate(680, 680)" filter="url(#shadow)">
+    <rect x="0" y="0" width="240" height="130" rx="12" fill="url(#battery-grad)" stroke="#38bdf8" stroke-width="2"/>
+    <text x="120" y="32" font-size="15" font-weight="900" fill="#f8fafc" text-anchor="middle">BATERIA DE COMBATE</text>
+    <text x="120" y="52" font-size="12" font-weight="700" fill="#38bdf8" text-anchor="middle">4x AA (6.0V) ou LiPo 2S (7.4V)</text>
+    
+    <!-- Representação das células -->
+    <rect x="25" y="65" width="40" height="50" rx="4" fill="#334155" stroke="#64748b" stroke-width="1.5"/>
+    <rect x="75" y="65" width="40" height="50" rx="4" fill="#334155" stroke="#64748b" stroke-width="1.5"/>
+    <rect x="125" y="65" width="40" height="50" rx="4" fill="#334155" stroke="#64748b" stroke-width="1.5"/>
+    <rect x="175" y="65" width="40" height="50" rx="4" fill="#334155" stroke="#64748b" stroke-width="1.5"/>
+    
+    <!-- Pólos Vermelho e Preto -->
+    <circle cx="120" cy="5" r="7" fill="#ef4444"/>
+    <circle cx="160" cy="5" r="7" fill="#0f172a" stroke="#64748b" stroke-width="1.5"/>
+  </g>
+
+  <!-- ======================================================== -->
+  <!-- 6. ATUADOR DA ARMA DE COMBATE (MOSFET OU SERVO)          -->
+  <!-- ======================================================== -->
+  <g id="weapon-actuator" transform="translate(1080, 680)" filter="url(#shadow)">
+    <rect x="0" y="0" width="240" height="130" rx="12" fill="url(#mosfet-grad)" stroke="#ef4444" stroke-width="2"/>
+    <text x="120" y="32" font-size="15" font-weight="900" fill="#f8fafc" text-anchor="middle">ATUADOR DA ARMA</text>
+    <text x="120" y="52" font-size="12" font-weight="700" fill="#fca5a5" text-anchor="middle">Módulo MOSFET / Mini Servo</text>
+
+    <!-- Dissipador / Borne da arma -->
+    <rect x="30" y="65" width="80" height="50" rx="6" fill="#1e293b" stroke="#475569" stroke-width="1.5"/>
+    <text x="70" y="95" font-size="11" font-weight="bold" fill="#f8fafc" text-anchor="middle">DISCO / CUNHA</text>
+    <rect x="135" y="75" width="75" height="30" rx="4" fill="#0f172a" stroke="#f87171" stroke-width="1.5"/>
+    <text x="172" y="94" font-size="11" font-weight="bold" fill="#fca5a5" text-anchor="middle">GATILHO A+B</text>
+  </g>
+
+  <!-- ======================================================== -->
+  <!-- 7. ETIQUETAS FLUTUANTES NAS CONEXÕES                     -->
+  <!-- ======================================================== -->
+  <g font-size="11.5" font-weight="bold" text-anchor="middle">
+    <!-- Fio Motor Esq -->
+    <rect x="420" y="270" width="150" height="24" rx="5" fill="#0f172a" stroke="#22c55e" stroke-width="1.5"/>
+    <text x="495" y="286" fill="#86efac">Borne LEFT ➔ Motor Esq</text>
+
+    <!-- Fio Motor Dir -->
+    <rect x="1350" y="270" width="150" height="24" rx="5" fill="#0f172a" stroke="#22c55e" stroke-width="1.5"/>
+    <text x="1425" y="286" fill="#86efac">Borne RIGHT ➔ Motor Dir</text>
+
+    <!-- Fio Bateria -->
+    <rect x="750" y="605" width="130" height="22" rx="5" fill="#0f172a" stroke="#38bdf8" stroke-width="1.5"/>
+    <text x="815" y="620" fill="#38bdf8">Alimentação 6V-7.4V</text>
+
+    <!-- Fio Arma P16 -->
+    <rect x="1140" y="605" width="140" height="22" rx="5" fill="#0f172a" stroke="#f59e0b" stroke-width="1.5"/>
+    <text x="1210" y="620" fill="#f59e0b">Sinal P16 + 3.3V + GND</text>
+  </g>
+
+</svg>
+
+</body>
+</html>
+"""
+
+def generate():
+    os.makedirs("docs/images", exist_ok=True)
+    html_path = os.path.abspath("docs/diagrama_microbit_robobit.html")
+    with open(html_path, "w", encoding="utf-8") as f:
+        f.write(HTML_ROBOBIT)
+
+    print("HTML written. Capturing with Playwright...")
+    with sync_playwright() as p:
+        browser = p.chromium.launch()
+        page = browser.new_page(viewport={"width": 1920, "height": 1080})
+        page.goto("file:///" + html_path.replace("\\", "/"))
+        page.wait_for_timeout(350)
+        
+        # Save to local paths
+        target_img_1 = "docs/images/circuito_microbit_robobit.jpg"
+        target_img_2 = "circuito_microbit_robobit.jpg"
+        target_img_3 = "microbit/circuito_microbit_robobit.jpg"
+
+        page.screenshot(path=target_img_1, type="jpeg", quality=95)
+        page.screenshot(path=target_img_2, type="jpeg", quality=95)
+        page.screenshot(path=target_img_3, type="jpeg", quality=95)
+        print("Robo:Bit diagram captured successfully!")
+        browser.close()
+
+    # Also copy to Artifact directory if available
+    artifact_dir = r"C:\Users\user\.gemini\antigravity\brain\2791b75b-6916-48f5-90a8-6eae4569d8e5"
+    if os.path.exists(artifact_dir):
+        dest = os.path.join(artifact_dir, "circuito_microbit_robobit.jpg")
+        shutil.copyfile("circuito_microbit_robobit.jpg", dest)
+        print(f"Copied to artifact directory: {dest}")
+
+if __name__ == "__main__":
+    generate()

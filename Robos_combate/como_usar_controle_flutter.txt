@@ -1,0 +1,73 @@
+====================================================================
+  🤖 GUIA RÁPIDO: APP FLUTTER COMBAT BOT PRO 100% PERSONALIZÁVEL
+====================================================================
+
+Este aplicativo foi desenvolvido para controle de combate de alta
+performance com DESIGN LIMPO, ELEGANTE E TOTALMENTE PERSONALIZÁVEL.
+
+Todas as configurações são salvas automaticamente no seu celular!
+
+--------------------------------------------------------------------
+1. CENTRAL DE PERSONALIZAÇÃO (ÍCONE DE ENGRENAGEM/AJUSTE NO TOPO)
+--------------------------------------------------------------------
+Toque no ícone de ajuste (tune) no canto superior direito para abrir
+as 5 abas de personalização:
+
+ABA 1 - CORES:
+  * Escolha entre 5 temas visuais completos:
+    - Obsidian Blue (Aeroespacial / Azul Elétrico)
+    - Cyber Emerald (F1 Tático / Verde)
+    - Crimson Fury (Combate / Vermelho Alerta)
+    - Amber Stealth (Noite / Laranja McLaren)
+    - Titanium Minimal (Titânio / Monocromático)
+
+ABA 2 - ERGONOMIA & PILOTO:
+  * Orientação: Destro (Analógico à Esquerda) ou Canhoto (Analógico à Direita).
+  * Inversão de Eixos: Inverter Avanço/Ré (Y) ou Esquerda/Direita (X).
+  * Curva Expo: Linear 1:1, Exponencial Suave (precisão no centro) ou Agressivo.
+  * Tamanho do Analógico: Raio ajustável de 85px a 135px.
+  * Zona Morta: Ajuste fino de 2% a 25%.
+
+ABA 3 - MOTORES & TRIM:
+  * Trim de Direção: Ajuste de -25% a +25% para alinhar robôs que puxam.
+  * Teto de Potência: Limite de velocidade de 30% a 100%.
+  * Overdrive Turbo: Potência do botão Turbo (80% a 100%).
+  * Rampa Suave: Amortece acelerações bruscas para não derrapar.
+
+ABA 4 - BOTÕES TÁTICOS (REMAPEAMENTO DOS 4 SLOTS):
+  * Mapeie livremente cada um dos 4 botões com:
+    - Giro 90° Esq / Dir
+    - Meia-Volta 180°
+    - Pivô Roda Esquerda / Direita
+    - Alternar Arma / Atuador
+    - Buzina / Buzzer
+    - Comando Customizado (String livre)
+  * Personalize o nome exibido em cada botão e o tempo do pulso em ms!
+
+ABA 5 - REDE & PROTOCOLO:
+  * Protocolo: WebSockets (<5ms), HTTP ou Simulação Local.
+  * IP do Robô com chips rápidos (192.168.4.1 ou 127.0.0.1).
+  * Frequência de atualização: 10ms (100 FPS) até 50ms (20 FPS).
+  * Botão "Restaurar Padrões de Fábrica" caso queira recomeçar.
+
+--------------------------------------------------------------------
+2. COMO TESTAR AGORA NO COMPUTADOR (GOOGLE CHROME)
+--------------------------------------------------------------------
+1. Abra o prompt de comando ou terminal.
+2. Navegue até a pasta do aplicativo:
+   cd flutter_controller
+
+3. Inicie o app no navegador Chrome:
+   flutter run -d chrome
+
+--------------------------------------------------------------------
+3. COMO INSTALAR NO CELULAR ANDROID (GERAR O APK)
+--------------------------------------------------------------------
+1. No terminal, dentro da pasta "flutter_controller":
+   flutter build apk --release
+
+2. O arquivo executável será gerado em:
+   flutter_controller/build/app/outputs/flutter-apk/app-release.apk
+
+3. Envie esse arquivo para o seu celular Android e instale diretamente!
+====================================================================

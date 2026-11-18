@@ -1,0 +1,101 @@
+===============================================================================
+       GUIA DE MONTAGEM E OPERAÇÃO: ROBÔ DE COMBATE BBC MICRO:BIT
+       Controle por Rádio 2.4GHz (<2ms), Acelerômetro 3D, Turbo e Failsafe
+===============================================================================
+
+Este manual detalha a montagem do robô de combate utilizando a placa
+BBC micro:bit (V1 ou V2) integrada à Ponte H L298N (ou TB6612FNG).
+
+-------------------------------------------------------------------------------
+1. VANTAGENS DO MICRO:BIT EM BATALHAS DE ROBÔS
+-------------------------------------------------------------------------------
+* Rádio 2.4GHz Integrado: Latência de menos de 2 milissegundos (sem o delay
+  de 50ms a 100ms do Wi-Fi e do Bluetooth!).
+* Controle por Inclinação (Tilt): Basta inclinar a mão com o micro:bit para
+  frente, trás e lados para pilotar de forma proporcional e suave.
+* Matriz de LEDs 5x5: Mostra o sentido de tração, alertas de combate e perda
+  de sinal em tempo real.
+* Failsafe Ativo: Watchdog de 400ms desliga os motores se perder a comunicação.
+
+-------------------------------------------------------------------------------
+2. ESQUEMA DE LIGAÇÃO (MICRO:BIT DO ROBÔ ➔ PONTE H L298N)
+-------------------------------------------------------------------------------
+Recomenda-se utilizar uma Placa de Expansão (Edge Connector Breakout ou 
+Sensor Shield) para acessar com facilidade os pinos P0, P1, P8 e P12:
+
+A) Fiação dos Sinais de Controle (PWM):
+   - Pino P0 do micro:bit  ----> Borne IN1 do L298N (Motor Esquerdo Frente)
+   - Pino P1 do micro:bit  ----> Borne IN2 do L298N (Motor Esquerdo Ré)
+   - Pino P8 do micro:bit  ----> Borne IN3 do L298N (Motor Direito Frente)
+   - Pino P12 do micro:bit ----> Borne IN4 do L298N (Motor Direito Ré)
+   - Pino P16 (Opcional)   ----> Sinal do MOSFET/Relé da Arma
+
+B) Jumpers da Ponte H L298N:
+   - Jumper preto de 5V: MANTENHA ENCAIXADO.
+   - Jumpers de velocidade ENA e ENB: MANTENHA ENCAIXADOS.
+
+C) Conexão dos Motores:
+   - Motor Esquerdo ➔ Bornes OUT1 e OUT2 da Ponte H.
+   - Motor Direito  ➔ Bornes OUT3 e OUT4 da Ponte H.
+
+-------------------------------------------------------------------------------
+3. ALIMENTAÇÃO ELÉTRICA (MUITO IMPORTANTE!)
+-------------------------------------------------------------------------------
+O micro:bit opera com nível de tensão de 3.3V. Os sinais P0, P1, P8 e P12 são
+de 3.3V, o que funciona perfeitamente nas entradas da Ponte H.
+
+Para alimentar todo o sistema com 1 única bateria de 7.4V (LiPo 2S):
+1. Força dos Motores:
+   - Bateria (+) ➔ Chave Geral (Kill Switch) ➔ Borne "12V" da Ponte H.
+   - Bateria (-) ➔ Borne "GND" da Ponte H.
+2. Alimentação do micro:bit:
+   - Opção Recomendada (Com Módulo Fonte MB102 ou Regulador Step-Down):
+     * Ligue a saída de 3.3V do MB102 no pino "3V" do micro:bit.
+     * Una o pino "GND" do micro:bit ao GND comum da bateria.
+   - Opção Prática (Cabo USB ou Caixa de 2 Pilhas AAA):
+     * O micro:bit do robô pode ser alimentado por um cabo USB de 5V vindo de um
+       Powerbank pequeno ou por um suporte de 2 pilhas AAA (3V) no conector JST.
+   - Terra Comum (GND):
+     * O anel "GND" do micro:bit DEVE ser conectado ao borne "GND" da Ponte H!
+
+-------------------------------------------------------------------------------
+4. GRAVAÇÃO DO PROGRAMA NOS 2 MICRO:BITS
+-------------------------------------------------------------------------------
+Você precisará de 2 placas micro:bit:
+* MICRO:BIT 1: Fica montado dentro do Robô (Receptor).
+* MICRO:BIT 2: Fica na mão do piloto como controle remoto (Transmissor).
+
+Como Gravar pelo Microsoft MakeCode (Plug-and-Play):
+1. Conecte o micro:bit no computador via cabo USB. Ele abrirá uma pasta "MICROBIT".
+2. Acesse: https://makecode.microbit.org
+3. Crie um projeto, mude a aba de "Blocos" para "JavaScript" no topo.
+4. Para o micro:bit do Robô:
+   - Cole o código do arquivo: "microbit/makecode_robot.js"
+   - Clique em "Baixar" e salve o arquivo .hex no micro:bit.
+5. Para o micro:bit do Controle:
+   - Cole o código do arquivo: "microbit/makecode_controller.js"
+   - Clique em "Baixar" e salve o arquivo .hex no segundo micro:bit.
+
+-------------------------------------------------------------------------------
+5. COMO PILOTAR NA ARENA
+-------------------------------------------------------------------------------
+1. Ligue a bateria do robô. O micro:bit do robô exibirá uma espada e depois um V.
+2. Ligue o micro:bit transmissor segurando-o na mão de forma horizontal (plana).
+3. Movimentos por Inclinação (Acelerômetro):
+   - Incline a mão para FRENTE: O robô acelera para a frente.
+   - Incline para TRÁS: O robô dá marcha ré.
+   - Incline para os LADOS: O robô faz curvas suaves e dinâmicas.
+   - Mantenha RETO: O robô para imediatamente.
+4. Botões de Combate:
+   - Pressione [ BOTÃO A ]: TURBO 100% instantâneo (força máxima de empurrão).
+   - Pressione [ BOTÃO B ]: Meia-volta rápida de 180° para fuga ou contra-golpe.
+   - Pressione [ A + B juntos ]: Dispara a arma de combate.
+
+-------------------------------------------------------------------------------
+6. DICA DE COMPETIÇÃO: CANAL DE RÁDIO
+-------------------------------------------------------------------------------
+Para evitar que o seu robô receba comandos de outros competidores na mesma arena:
+- No código de ambos os micro:bits, altere a variável:
+  CANAL_RADIO = 7 (escolha qualquer número de 0 a 83).
+- O robô e o controle devem estar no MESMO canal!
+===============================================================================
