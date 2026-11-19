@@ -32,7 +32,8 @@ O projeto é modular e suporta **4 plataformas completas de hardware**:
 * **Vantagem Principal**: **Não precisa de um segundo micro:bit para pilotar!** Você utiliza apenas 1 placa micro:bit V2 no chassi do robô e controla diretamente pelo celular.
 * **Web Bluetooth**: Basta abrir a página [microbit/controle_celular_web_bluetooth.html](microbit/controle_celular_web_bluetooth.html) no Google Chrome ou Samsung Internet (Android) ou Bluefy (iOS) para pilotar via tela de toque.
 * **Firmwares MakeCode**:
-  - Para Shield Robo:Bit: [`microbit/microbit_v2_bluetooth_robobit.js`](microbit/microbit_v2_bluetooth_robobit.js)
+  - Para Shield 4tronix Robo:Bit: [`microbit/microbit_v2_bluetooth_robobit.js`](microbit/microbit_v2_bluetooth_robobit.js)
+  - Para Shield KittenBot Robot:bit (com Bateria 18650, M1 e M2): [`microbit/robotbit_kittenbot_v2_bluetooth.js`](microbit/robotbit_kittenbot_v2_bluetooth.js)
   - Para Ponte H L298N: [`microbit/microbit_v2_bluetooth_l298n.js`](microbit/microbit_v2_bluetooth_l298n.js)
 * **Guia Completo**: [`microbit/como_controlar_pelo_celular.txt`](microbit/como_controlar_pelo_celular.txt) e [`microbit/README_BLUETOOTH_V2.md`](microbit/README_BLUETOOTH_V2.md)
 
@@ -130,6 +131,7 @@ MDRV--Carrinhos-de-Combate-BASE-/
 ├── platformio.ini / src/main.cpp              # Build PlatformIO C++
 │
 ├── microbit/                                  # Plataforma BBC micro:bit
+│   ├── robotbit_kittenbot_v2_bluetooth.js     # V2 BLE: Celular + KittenBot Robot:bit (M1 e M2)
 │   ├── microbit_v2_bluetooth_robobit.js       # V2 BLE: Celular + Shield Robo:Bit
 │   ├── microbit_v2_bluetooth_l298n.js         # V2 BLE: Celular + Ponte H L298N
 │   ├── controle_celular_web_bluetooth.html    # App Web Bluetooth Touch 360°

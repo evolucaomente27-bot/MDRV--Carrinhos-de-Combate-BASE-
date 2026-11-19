@@ -24,6 +24,12 @@ Com este firmware para o BBC micro:bit V2:
     - Use o arquivo: `microbit_v2_bluetooth_l298n.js`
     - Ele controla os pinos P0, P1, P8, P12 e P16 para a ponte H.
 
+  [Opção C] Se você usa o SHIELD KITTENBOT ROBOT:BIT (com Bateria 18650):
+    - Use o arquivo: `robotbit_kittenbot_v2_bluetooth.js`
+    - Instale a extensão oficial `robotbit` (KittenBot) no MakeCode.
+    - Ligue o Motor Esquerdo no bloco inferior (M1) e o Motor Direito no bloco superior (M2).
+    - O pino VM fica vazio!
+
 =====================================================================================
 3. PASSO A PASSO NO MICROSOFT MAKECODE
 =====================================================================================

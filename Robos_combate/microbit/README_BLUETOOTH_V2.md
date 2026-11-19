@@ -23,6 +23,7 @@ Você pilota o robô diretamente pelo seu **Smartphone (Android, iPhone ou PC)**
 | Arquivo | Descrição | Plataforma |
 | :--- | :--- | :--- |
 | [microbit_v2_bluetooth_robobit.js](file:///c:/Users/user/Documents/antigravity/blissful-darwin/microbit/microbit_v2_bluetooth_robobit.js) | Firmware MakeCode para micro:bit V2 com **Shield 4tronix Robo:Bit** via BLE | Microsoft MakeCode |
+| [robotbit_kittenbot_v2_bluetooth.js](file:///c:/Users/user/Documents/antigravity/blissful-darwin/microbit/robotbit_kittenbot_v2_bluetooth.js) | Firmware MakeCode para micro:bit V2 com **Shield KittenBot Robot:bit** (M1 e M2) | Microsoft MakeCode |
 | [microbit_v2_bluetooth_l298n.js](file:///c:/Users/user/Documents/antigravity/blissful-darwin/microbit/microbit_v2_bluetooth_l298n.js) | Firmware MakeCode para micro:bit V2 com **Ponte H L298N** via BLE | Microsoft MakeCode |
 | [controle_celular_web_bluetooth.html](file:///c:/Users/user/Documents/antigravity/blissful-darwin/microbit/controle_celular_web_bluetooth.html) | Aplicativo Web de Joystick Touch 360° para navegador do celular (Chrome / Bluefy) | Web Bluetooth API |
 | [como_controlar_pelo_celular.txt](file:///c:/Users/user/Documents/antigravity/blissful-darwin/microbit/como_controlar_pelo_celular.txt) | Guia prático de bancada para pareamento sem PIN, testes e apps | Guia Técnico |
