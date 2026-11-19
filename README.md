@@ -30,7 +30,9 @@ O projeto é modular e suporta **4 plataformas completas de hardware**:
 
 ### Opção 1: BBC micro:bit V2 (Bluetooth BLE pelo Celular)
 * **Vantagem Principal**: **Não precisa de um segundo micro:bit para pilotar!** Você utiliza apenas 1 placa micro:bit V2 no chassi do robô e controla diretamente pelo celular.
-* **Web Bluetooth**: Basta abrir a página [microbit/controle_celular_web_bluetooth.html](microbit/controle_celular_web_bluetooth.html) no Google Chrome ou Samsung Internet (Android) ou Bluefy (iOS) para pilotar via tela de toque.
+* **🌐 Controle Online Hospedado (GitHub Pages)**:
+  👉 **[https://evolucaomente27-bot.github.io/MDRV--Carrinhos-de-Combate-BASE-/](https://evolucaomente27-bot.github.io/MDRV--Carrinhos-de-Combate-BASE-/)**
+  *(Abra este link no Google Chrome ou Samsung Internet no Android, ou Bluefy no iOS, e pilote na hora via tela de toque com suporte total a Web Bluetooth HTTPS!)*
 * **Firmwares MakeCode**:
   - Para Shield 4tronix Robo:Bit: [`microbit/microbit_v2_bluetooth_robobit.js`](microbit/microbit_v2_bluetooth_robobit.js)
   - Para Shield KittenBot Robot:bit (com Bateria 18650, M1 e M2): [`microbit/robotbit_kittenbot_v2_bluetooth.js`](microbit/robotbit_kittenbot_v2_bluetooth.js)
