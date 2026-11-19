@@ -1,8 +1,12 @@
 /**
  * =====================================================================================
- * PROJETO: ROBÔ DE COMBATE BBC MICRO:BIT V2 - SHIELD KITTENBOT ROBOT:BIT (ULTRA-SMOOTH)
- * Firmware Otimizado: SEM TRAVAMENTOS, SEM ENGASGOS E DISPLAY INTELIGENTE
- * Hardware: BBC micro:bit V2 + Shield KittenBot Robot:bit (com Bateria 18650)
+ * PROJETO: ROBÔ DE COMBATE BBC MICRO:BIT V2 - SHIELD KITTENBOT ROBOT:BIT (M1 + M2 FIX)
+ * Controle Direto pelo Celular (Bluetooth BLE / Web Bluetooth)
+ * Hardware: BBC micro:bit V2 + Shield KittenBot Robot:bit
+ * 
+ * LIGAÇÃO FÍSICA:
+ *   - Motor Esquerdo: Conectado no LADO M1 (Bloco inferior)
+ *   - Motor Direito:  Conectado no LADO M2 (Bloco superior)
  * =====================================================================================
  */
 
@@ -38,30 +42,37 @@ function pararMotores() {
 }
 
 /**
- * Aciona os motores M1A (Esquerdo) e M1B (Direito)
- * velL e velR variam entre -255 e +255
+ * ACIONA OS MOTORES DOS DOIS LADOS (M1 E M2):
+ * - velL vai para o lado M1 (Motor Esquerdo)
+ * - velR vai para o lado M2 (Motor Direito)
+ * Aciona tanto canal A quanto canal B para garantir que funcione em qualquer par de pinos!
  */
 function acionarMotores(velL: number, velR: number) {
     velL = Math.max(-255, Math.min(255, velL))
     velR = Math.max(-255, Math.min(255, velR))
 
+    // === LADO M1: MOTOR ESQUERDO ===
     if (Math.abs(velL) < 25) {
         robotbit.MotorRun(robotbit.Motors.M1A, 0)
-    } else {
-        robotbit.MotorRun(robotbit.Motors.M1A, velL)
-    }
-
-    if (Math.abs(velR) < 25) {
         robotbit.MotorRun(robotbit.Motors.M1B, 0)
     } else {
-        robotbit.MotorRun(robotbit.Motors.M1B, velR)
+        robotbit.MotorRun(robotbit.Motors.M1A, velL)
+        robotbit.MotorRun(robotbit.Motors.M1B, velL)
+    }
+
+    // === LADO M2: MOTOR DIREITO ===
+    if (Math.abs(velR) < 25) {
+        robotbit.MotorRun(robotbit.Motors.M2A, 0)
+        robotbit.MotorRun(robotbit.Motors.M2B, 0)
+    } else {
+        robotbit.MotorRun(robotbit.Motors.M2A, velR)
+        robotbit.MotorRun(robotbit.Motors.M2B, velR)
     }
 }
 
 /**
- * FILTRO ANTI-TRAVAMENTO DE TELA:
- * O micro:bit só redesenha a tela se a direção REALMENTE mudar.
- * Isso impede que a tela bloqueie o processador e faz o robô rodar liso sem engasgar!
+ * FILTRO ANTI-TRAVAMENTO:
+ * Só atualiza a tela quando o sentido mudar para não travar os motores.
  */
 function atualizarDisplay(novoEstado: number) {
     if (novoEstado == ultimoEstadoExibido) return
@@ -148,11 +159,11 @@ bluetooth.onUartDataReceived(serial.delimiters(Delimiters.NewLine), function () 
     }
 })
 
-// Watchdog Failsafe Calibrado (1200ms) - Elimina falsos cortes de sinal!
+// Watchdog Failsafe Calibrado (1200ms)
 basic.forever(function () {
     if (conectado && (input.runningTime() - ultimoSinal > 1200)) {
         pararMotores()
-        atualizarDisplay(7) // Exibe X apenas se o sinal realmente sumir
+        atualizarDisplay(7)
     }
     basic.pause(80)
 })
