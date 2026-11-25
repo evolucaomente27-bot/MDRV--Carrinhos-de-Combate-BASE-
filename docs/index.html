@@ -3,328 +3,885 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<meta name="theme-color" content="#090d16">
-<title>Controle micro:bit V2 - Combate Celular</title>
+<meta name="theme-color" content="#090b10">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Controle micro:bit V2 - Combate</title>
 <style>
+  :root {
+    --bg-room: #07090d;
+    --shell-top: #181c26;
+    --shell-bottom: #0f1219;
+    --shell-border: rgba(255, 255, 255, 0.08);
+    --recess-bg: #090b10;
+    --cap-top: #232938;
+    --cap-bottom: #161a24;
+    --text-main: #f1f5f9;
+    --text-muted: #64748b;
+    --text-dim: #475569;
+    --cyan: #22d3ee;
+    --cyan-soft: rgba(34, 211, 238, 0.16);
+    --emerald: #10b981;
+    --amber: #f59e0b;
+    --violet: #a855f7;
+    --crimson: #ef4444;
+  }
+
   * {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
     user-select: none;
     -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
     touch-action: none;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
   }
 
-  body {
-    background: #090d16;
-    color: #f1f5f9;
-    height: 100vh;
-    width: 100vw;
+  html, body {
+    width: 100%;
+    height: 100%;
     overflow: hidden;
+    background: radial-gradient(circle at 50% 35%, #121722 0%, var(--bg-room) 80%);
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* =========================================================
+     CORPO FÍSICO DO CONTROLE (GAMEPAD CHASSIS)
+  ========================================================= */
+  .gamepad {
+    width: 100%;
+    height: 100%;
+    max-width: 940px;
+    max-height: 460px;
+    background: linear-gradient(180deg, var(--shell-top) 0%, var(--shell-bottom) 100%);
+    border: 1px solid var(--shell-border);
+    box-shadow:
+      0 28px 70px rgba(0, 0, 0, 0.75),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1),
+      inset 0 -8px 24px rgba(0, 0, 0, 0.5);
     display: flex;
     flex-direction: column;
-  }
-
-  /* Header */
-  .top-bar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 18px;
-    background: rgba(15, 23, 42, 0.95);
-    border-bottom: 1px solid #1e293b;
-    z-index: 10;
-  }
-  .brand {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 16px;
-    font-weight: 800;
-    letter-spacing: 0.5px;
-  }
-  .brand span { color: #06b6d4; }
-  
-  .status-badge {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 6px 14px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 700;
-    background: #1e293b;
-    color: #94a3b8;
-    border: 1px solid #334155;
-    transition: all 0.3s;
-  }
-  .status-badge.connected {
-    background: rgba(16, 185, 129, 0.15);
-    color: #10b981;
-    border-color: #10b981;
-  }
-  .status-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: #ef4444;
-  }
-  .status-badge.connected .status-dot {
-    background: #10b981;
-    box-shadow: 0 0 8px #10b981;
-  }
-
-  .btn-connect {
-    background: #06b6d4;
-    color: #042f2e;
-    border: none;
-    padding: 7px 16px;
-    border-radius: 8px;
-    font-weight: 800;
-    font-size: 12px;
-    cursor: pointer;
-    box-shadow: 0 2px 10px rgba(6, 182, 212, 0.3);
-    transition: transform 0.1s, background 0.2s;
-  }
-  .btn-connect:active { transform: scale(0.95); }
-  .btn-connect.connected {
-    background: #dc2626;
-    color: #fff;
-    box-shadow: 0 2px 10px rgba(220, 38, 38, 0.3);
-  }
-
-  /* Telemetria Compacta */
-  .telemetry-strip {
-    display: flex;
-    justify-content: space-around;
-    padding: 6px 16px;
-    background: #0b1120;
-    border-bottom: 1px solid #1e293b;
-    font-size: 11px;
-    font-weight: 700;
-    color: #64748b;
-  }
-  .telemetry-val { color: #38bdf8; }
-
-  /* Área Principal de Controle */
-  .arena-panel {
-    flex: 1;
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-    padding: 16px 24px;
     position: relative;
-    gap: 20px;
+    overflow: hidden;
+    padding: env(safe-area-inset-top, 10px) env(safe-area-inset-right, 16px) env(safe-area-inset-bottom, 10px) env(safe-area-inset-left, 16px);
   }
 
-  @media (max-width: 600px) {
-    .arena-panel {
-      flex-direction: column;
-      justify-content: space-around;
-      padding: 10px;
+  /* Contorno sutil de chassi ergonômico (linhas de empunhadura em paisagem) */
+  .gamepad::before,
+  .gamepad::after {
+    content: "";
+    position: absolute;
+    top: -10%;
+    bottom: -10%;
+    width: 34%;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.03);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .gamepad::before { left: -6%; }
+  .gamepad::after  { right: -6%; }
+  .gamepad > * { position: relative; z-index: 2; }
+
+  @media (min-width: 720px) and (min-height: 430px) {
+    .gamepad {
+      border-radius: 44px;
+      padding: 14px 26px 18px;
     }
   }
 
-  /* Joystick Virtual */
-  .joystick-zone {
-    display: flex;
-    flex-direction: column;
+  /* =========================================================
+     BARRA SUPERIOR: GATILHOS L1 / R1 + CONEXÃO BLE
+  ========================================================= */
+  .shoulders {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
     align-items: center;
-    justify-content: center;
-  }
-  .joystick-base {
-    width: 200px;
-    height: 200px;
-    background: radial-gradient(circle, #1e293b 0%, #0f172a 80%);
-    border: 2px solid #334155;
-    border-radius: 50%;
-    position: relative;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.5), inset 0 0 15px rgba(0,0,0,0.4);
-    touch-action: none;
-  }
-  .joystick-thumb {
-    width: 74px;
-    height: 74px;
-    background: radial-gradient(circle, #38bdf8 0%, #0284c7 100%);
-    border: 3px solid #e0f2fe;
-    border-radius: 50%;
-    position: absolute;
-    top: calc(50% - 37px);
-    left: calc(50% - 37px);
-    box-shadow: 0 4px 14px rgba(2, 132, 199, 0.5);
-    pointer-events: none;
-    transition: transform 0.05s ease-out;
-  }
-  .joystick-label {
-    margin-top: 8px;
-    font-size: 11px;
-    font-weight: 700;
-    color: #64748b;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-  }
-
-  /* Painel Tático de Botões */
-  .tactical-zone {
-    display: flex;
-    flex-direction: column;
     gap: 12px;
-    width: 220px;
-    max-width: 100%;
+    padding: 4px 4px 10px;
+    z-index: 5;
   }
 
-  .btn-tactical {
-    background: #1e293b;
-    border: 1px solid #334155;
-    color: #f8fafc;
-    padding: 14px;
-    border-radius: 12px;
-    font-size: 13px;
-    font-weight: 800;
+  .bumper-btn {
+    min-width: 0;
+    height: 36px;
+    max-width: 168px;
+    background: linear-gradient(180deg, #252b3b 0%, #171b26 100%);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-top: 2px solid rgba(255, 255, 255, 0.16);
+    border-radius: 10px 10px 6px 6px;
+    color: var(--text-main);
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
-    cursor: pointer;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-    transition: transform 0.1s, background 0.2s;
-  }
-  .btn-tactical:active { transform: scale(0.96); }
-
-  .btn-turbo {
-    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-    color: #0f172a;
-    border: none;
-    font-size: 14px;
-  }
-  .btn-t180 {
-    background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
-    color: #fff;
-    border: none;
-  }
-  .btn-weapon {
-    background: #1e293b;
-    border: 2px solid #ef4444;
-    color: #f87171;
-  }
-  .btn-weapon.active {
-    background: #ef4444;
-    color: #fff;
-    box-shadow: 0 0 16px rgba(239, 68, 68, 0.6);
-  }
-
-  .btn-stop {
-    background: #0f172a;
-    border: 2px solid #ef4444;
-    color: #ef4444;
-    padding: 8px;
-    font-size: 11px;
-    font-weight: 800;
-    border-radius: 8px;
-    cursor: pointer;
-    text-transform: uppercase;
-  }
-  .btn-stop:active { background: #ef4444; color: #fff; }
-
-  /* Sliders de Velocidade */
-  .slider-box {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    background: rgba(15, 23, 42, 0.6);
-    padding: 8px 12px;
-    border-radius: 8px;
-    border: 1px solid #1e293b;
-  }
-  .slider-header {
-    display: flex;
-    justify-content: space-between;
     font-size: 11px;
     font-weight: 700;
-    color: #94a3b8;
+    letter-spacing: 0.9px;
+    text-transform: uppercase;
+    cursor: pointer;
+    box-shadow:
+      0 4px 10px rgba(0, 0, 0, 0.45),
+      inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    transition: transform 0.07s ease, box-shadow 0.07s ease, border-color 0.15s ease;
   }
-  input[type=range] {
+
+  .bumper-left {
+    justify-self: start;
     width: 100%;
-    accent-color: #06b6d4;
+    border-top-color: rgba(239, 68, 68, 0.45);
+  }
+
+  .bumper-right {
+    justify-self: end;
+    width: 100%;
+    border-top-color: rgba(245, 158, 11, 0.55);
+  }
+
+  .bumper-tag {
+    font-size: 9px;
+    font-weight: 800;
+    padding: 2px 5px;
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.4);
+    color: var(--text-muted);
+    letter-spacing: 0.5px;
+  }
+
+  .bumper-btn.pressed,
+  .bumper-btn:active {
+    transform: translateY(2px);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.6), inset 0 2px 6px rgba(0, 0, 0, 0.45);
+  }
+
+  .bumper-left.pressed {
+    border-color: var(--crimson);
+    color: #fca5a5;
+  }
+
+  .bumper-right.pressed {
+    border-color: var(--amber);
+    color: #fde68a;
+  }
+
+  /* Ilha Central Superior (BLE Status + Conectar) */
+  .top-center {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--recess-bg);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    padding: 4px 6px 4px 12px;
+    border-radius: 999px;
+    box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.6);
+  }
+
+  .ble-status {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+  }
+
+  .status-led {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #475569;
+    transition: background 0.25s, box-shadow 0.25s;
+  }
+
+  .ble-status.searching .status-led {
+    background: var(--amber);
+    box-shadow: 0 0 8px var(--amber);
+    animation: pulseLed 0.9s infinite ease-in-out;
+  }
+
+  .ble-status.connected {
+    color: #cbd5e1;
+  }
+
+  .ble-status.connected .status-led {
+    background: var(--emerald);
+    box-shadow: 0 0 8px var(--emerald);
+  }
+
+  @keyframes pulseLed {
+    0%, 100% { opacity: 0.35; }
+    50% { opacity: 1; }
+  }
+
+  .btn-pair {
+    background: var(--cyan);
+    color: #062129;
+    border: none;
+    height: 26px;
+    padding: 0 12px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: transform 0.08s ease, background 0.2s ease, color 0.2s ease;
+  }
+
+  .btn-pair:active { transform: scale(0.95); }
+
+  .btn-pair.connected {
+    background: rgba(239, 68, 68, 0.14);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.35);
+  }
+
+  /* =========================================================
+     ÁREA DE CONTROLE PRINCIPAL (3 ZONAS DO GAMEPAD)
+  ========================================================= */
+  .controller-body {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr minmax(180px, 220px) 1fr;
+    align-items: center;
+    gap: 10px;
+    min-height: 0;
+  }
+
+  /* ZONA ESQUERDA (ANALÓGICO / D-PAD) */
+  .pod-left, .pod-right {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    position: relative;
+  }
+
+  .hidden {
+    display: none !important;
+  }
+
+  /* ANALÓGICO FÍSICO CÔNCAVO */
+  .stick-well {
+    width: clamp(150px, 39vh, 198px);
+    height: clamp(150px, 39vh, 198px);
+    border-radius: 50%;
+    background: radial-gradient(circle at 50% 55%, #07090d 0%, #0d1017 72%, #151923 100%);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    box-shadow:
+      inset 0 10px 24px rgba(0, 0, 0, 0.85),
+      0 2px 0 rgba(255, 255, 255, 0.05);
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Marcações sutis de cruz no anel interno do analógico */
+  .stick-well::before,
+  .stick-well::after {
+    content: "";
+    position: absolute;
+    background: rgba(255, 255, 255, 0.04);
+    pointer-events: none;
+  }
+  .stick-well::before { width: 72%; height: 1px; }
+  .stick-well::after { height: 72%; width: 1px; }
+
+  .stick-ring {
+    position: absolute;
+    inset: 12px;
+    border-radius: 50%;
+    border: 1px dashed rgba(255, 255, 255, 0.05);
+    pointer-events: none;
+    transition: border-color 0.2s ease;
+  }
+
+  .stick-well.active .stick-ring {
+    border-color: rgba(34, 211, 238, 0.28);
+  }
+
+  .stick-cap {
+    width: clamp(64px, 16vh, 80px);
+    height: clamp(64px, 16vh, 80px);
+    border-radius: 50%;
+    background: radial-gradient(circle at 50% 35%, #2b3244 0%, #191e29 68%, #10131b 100%);
+    border: 2px solid rgba(255, 255, 255, 0.14);
+    box-shadow:
+      0 10px 22px rgba(0, 0, 0, 0.75),
+      0 0 0 4px rgba(10, 12, 18, 0.55),
+      inset 0 4px 10px rgba(0, 0, 0, 0.65);
+    position: relative;
+    pointer-events: none;
+    transition: transform 0.09s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.15s, box-shadow 0.15s;
+  }
+
+  /* Centro côncavo emborrachado do analógico */
+  .stick-cap::after {
+    content: "";
+    position: absolute;
+    inset: 11px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 50% 60%, #1e2432 0%, #11151e 100%);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.7);
+  }
+
+  .stick-well.active .stick-cap {
+    transition: none;
+    border-color: var(--cyan);
+    box-shadow:
+      0 12px 26px rgba(0, 0, 0, 0.8),
+      0 0 16px rgba(34, 211, 238, 0.3),
+      inset 0 4px 10px rgba(0, 0, 0, 0.65);
+  }
+
+  /* D-PAD EM CRUZ REAL (ALTERNATIVO) */
+  .dpad-well {
+    width: clamp(150px, 39vh, 194px);
+    height: clamp(150px, 39vh, 194px);
+    border-radius: 50%;
+    background: radial-gradient(circle, #090b10 0%, #121620 100%);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    box-shadow: inset 0 8px 20px rgba(0, 0, 0, 0.85);
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    padding: 18px;
+    gap: 2px;
+  }
+
+  .dpad-btn {
+    background: linear-gradient(180deg, #272e3f 0%, #191d28 100%);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    transition: transform 0.06s, color 0.1s, border-color 0.1s;
+  }
+
+  .dpad-up    { grid-column: 2; grid-row: 1; border-radius: 10px 10px 2px 2px; }
+  .dpad-left  { grid-column: 1; grid-row: 2; border-radius: 10px 2px 2px 10px; }
+  .dpad-core  {
+    grid-column: 2; grid-row: 2;
+    background: #1a1f2b;
+    display: flex; align-items: center; justify-content: center;
+    pointer-events: none;
+  }
+  .dpad-core::after {
+    content: "";
+    width: 14px; height: 14px; border-radius: 50%;
+    background: radial-gradient(circle, #0e1118 0%, #1f2533 100%);
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.8);
+  }
+  .dpad-right { grid-column: 3; grid-row: 2; border-radius: 2px 10px 10px 2px; }
+  .dpad-down  { grid-column: 2; grid-row: 3; border-radius: 2px 2px 10px 10px; }
+
+  .dpad-btn.pressed {
+    background: #141822;
+    color: var(--cyan);
+    border-color: rgba(34, 211, 238, 0.5);
+    transform: scale(0.95);
+    box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.75);
+  }
+
+  /* =========================================================
+     CONSOLE CENTRAL (MINIMAL OLED TELEMETRY + CONTROLES)
+  ========================================================= */
+  .center-hub {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    height: 100%;
+    padding: 4px 0;
+  }
+
+  .oled-screen {
+    width: 100%;
+    background: #06080c;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 14px;
+    padding: 10px 12px;
+    box-shadow:
+      inset 0 3px 10px rgba(0, 0, 0, 0.9),
+      0 1px 0 rgba(255, 255, 255, 0.05);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .oled-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+  }
+
+  .oled-pkt {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-muted);
+  }
+
+  .motor-meters {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .meter-row {
+    display: grid;
+    grid-template-columns: 16px 1fr 38px;
+    align-items: center;
+    gap: 8px;
+    font-size: 10px;
+    font-weight: 700;
+  }
+
+  .meter-lbl { color: var(--text-muted); }
+
+  .meter-track {
+    height: 6px;
+    background: #131722;
+    border-radius: 999px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .meter-fill {
+    height: 100%;
+    width: 0%;
+    border-radius: 999px;
+    background: var(--cyan);
+    transition: width 0.06s linear, background-color 0.15s;
+  }
+
+  .meter-fill.reverse {
+    background: var(--amber);
+  }
+
+  .meter-val {
+    text-align: right;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-main);
+    font-size: 10px;
+  }
+
+  /* Slider Minimalista de Teto de Potência */
+  .power-cap {
+    width: 100%;
+    background: rgba(9, 11, 16, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 10px;
+    padding: 7px 11px 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .power-cap-top {
+    display: flex;
+    justify-content: space-between;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+  }
+
+  .power-cap-top span:last-child {
+    color: var(--cyan);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+
+  input[type=range] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 4px;
+    background: #1e2433;
+    border-radius: 999px;
+    outline: none;
+  }
+
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--cyan);
+    border: 2px solid #090b10;
+    box-shadow: 0 0 8px rgba(34, 211, 238, 0.5);
+    cursor: pointer;
+  }
+
+  /* Botão Switch Stick / D-Pad (estilo Select/Mode) */
+  .mode-switch {
+    display: flex;
+    background: var(--recess-bg);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 999px;
+    padding: 3px;
+    gap: 2px;
+  }
+
+  .mode-opt {
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.8px;
+    padding: 5px 12px;
+    border-radius: 999px;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: background 0.15s, color 0.15s;
+  }
+
+  .mode-opt.active {
+    background: #232938;
+    color: var(--text-main);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+  }
+
+  /* =========================================================
+     ZONA DIREITA: BOTÕES ABXY EM DIAMANTE (CONTROLE REAL)
+  ========================================================= */
+  .diamond-pad {
+    width: clamp(164px, 41vh, 210px);
+    height: clamp(164px, 41vh, 210px);
+    position: relative;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(9, 11, 16, 0.6) 0%, transparent 72%);
+  }
+
+  .face-btn {
+    position: absolute;
+    width: clamp(54px, 13.5vh, 68px);
+    height: clamp(54px, 13.5vh, 68px);
+    border-radius: 50%;
+    background: radial-gradient(circle at 50% 30%, var(--cap-top) 0%, var(--cap-bottom) 100%);
+    border: 1.5px solid rgba(255, 255, 255, 0.11);
+    box-shadow:
+      0 8px 18px rgba(0, 0, 0, 0.72),
+      0 0 0 4px rgba(9, 11, 16, 0.7),
+      inset 0 1px 1px rgba(255, 255, 255, 0.14);
+    color: var(--text-main);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    cursor: pointer;
+    transition: transform 0.06s ease, box-shadow 0.08s ease, border-color 0.15s ease, background 0.15s ease;
+  }
+
+  .face-btn svg {
+    width: 17px;
+    height: 17px;
+    stroke-width: 2.2;
+  }
+
+  .face-btn span {
+    font-size: 8.5px;
+    font-weight: 800;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+  }
+
+  /* Posicionamento em Diamante Clássico */
+  .btn-top    { top: 4px; left: 50%; transform: translateX(-50%); }
+  .btn-left   { left: 4px; top: 50%; transform: translateY(-50%); }
+  .btn-right  { right: 4px; top: 50%; transform: translateY(-50%); }
+  .btn-bottom { bottom: 4px; left: 50%; transform: translateX(-50%); }
+
+  .btn-top.pressed, .btn-top:active       { transform: translateX(-50%) scale(0.93); }
+  .btn-left.pressed, .btn-left:active     { transform: translateY(-50%) scale(0.93); }
+  .btn-right.pressed, .btn-right:active   { transform: translateY(-50%) scale(0.93); }
+  .btn-bottom.pressed, .btn-bottom:active { transform: translateX(-50%) scale(0.93); }
+
+  .face-btn.pressed,
+  .face-btn:active {
+    box-shadow:
+      0 2px 6px rgba(0, 0, 0, 0.8),
+      0 0 0 4px rgba(9, 11, 16, 0.85),
+      inset 0 3px 8px rgba(0, 0, 0, 0.7);
+  }
+
+  /* Acentos Sutis por Função */
+  .btn-turbo-face { color: #fbbf24; border-color: rgba(245, 158, 11, 0.3); }
+  .btn-turbo-face.pressed {
+    border-color: var(--amber);
+    box-shadow: 0 0 18px rgba(245, 158, 11, 0.45), 0 0 0 4px rgba(9, 11, 16, 0.85), inset 0 3px 8px rgba(0,0,0,0.6);
+  }
+
+  .btn-spin-face { color: #c084fc; border-color: rgba(168, 85, 247, 0.3); }
+  .btn-spin-face.pressed {
+    border-color: var(--violet);
+    box-shadow: 0 0 18px rgba(168, 85, 247, 0.45), 0 0 0 4px rgba(9, 11, 16, 0.85), inset 0 3px 8px rgba(0,0,0,0.6);
+  }
+
+  .btn-weapon-face { color: #94a3b8; border-color: rgba(239, 68, 68, 0.25); }
+  .btn-weapon-face.active {
+    background: radial-gradient(circle at 50% 30%, #991b1b 0%, #450a0a 100%);
+    color: #fff;
+    border-color: var(--crimson);
+    box-shadow: 0 0 20px rgba(239, 68, 68, 0.65), 0 0 0 4px rgba(9, 11, 16, 0.85);
+  }
+
+  .btn-stop-face { color: #f87171; border-color: rgba(239, 68, 68, 0.32); }
+  .btn-stop-face.pressed {
+    background: #7f1d1d;
+    color: #fff;
+    border-color: var(--crimson);
+  }
+
+  /* =========================================================
+     SUPORTE RESPONSIVO EM MODO RETRATO (CELULAR EM PÉ)
+  ========================================================= */
+  @media (max-width: 660px) and (orientation: portrait) {
+    .gamepad::before,
+    .gamepad::after {
+      display: none;
+    }
+    .gamepad {
+      max-height: none;
+      padding: env(safe-area-inset-top, 12px) 12px env(safe-area-inset-bottom, 14px);
+    }
+    .shoulders {
+      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+      padding: 2px 0 8px;
+      gap: 6px;
+    }
+    .bumper-btn {
+      height: 32px;
+      font-size: 9.5px;
+      gap: 4px;
+      padding: 0 6px;
+      letter-spacing: 0.4px;
+    }
+    .bumper-tag {
+      font-size: 8px;
+      padding: 1px 4px;
+    }
+    .top-center {
+      gap: 6px;
+      padding: 3px 4px 3px 9px;
+      min-width: 0;
+    }
+    .ble-status {
+      font-size: 10px;
+      gap: 5px;
+    }
+    .btn-pair {
+      height: 24px;
+      padding: 0 9px;
+      font-size: 9.5px;
+    }
+    .controller-body {
+      grid-template-columns: 1fr;
+      grid-template-rows: auto 1fr 1fr;
+      gap: 8px;
+    }
+    .center-hub {
+      grid-row: 1;
+      flex-direction: row;
+      flex-wrap: wrap;
+      gap: 8px;
+      height: auto;
+    }
+    .oled-screen {
+      flex: 1 1 55%;
+      padding: 8px 10px;
+    }
+    .power-cap {
+      flex: 1 1 38%;
+    }
+    .mode-switch {
+      order: 3;
+    }
+    .pod-left {
+      grid-row: 2;
+    }
+    .pod-right {
+      grid-row: 3;
+    }
+    .stick-well, .dpad-well {
+      width: 174px;
+      height: 174px;
+    }
+    .stick-cap {
+      width: 68px;
+      height: 68px;
+    }
+    .diamond-pad {
+      width: 184px;
+      height: 184px;
+    }
+    .face-btn {
+      width: 60px;
+      height: 60px;
+    }
   }
 </style>
 </head>
 <body>
 
-  <!-- Top Bar -->
-  <div class="top-bar">
-    <div class="brand">
-      <span>🤖</span> micro:bit V2 <span>BLE</span>
-    </div>
-    <div class="status-badge" id="statusBadge">
-      <div class="status-dot"></div>
-      <span id="statusText">Desconectado</span>
-    </div>
-    <button class="btn-connect" id="btnConnect" onclick="toggleConnect()">CONECTAR</button>
-  </div>
+  <main class="gamepad" aria-label="Controle Gamepad micro:bit V2">
 
-  <!-- Telemetria -->
-  <div class="telemetry-strip">
-    <div>MOTOR L: <span class="telemetry-val" id="valL">0%</span></div>
-    <div>MOTOR R: <span class="telemetry-val" id="valR">0%</span></div>
-    <div>TX: <span class="telemetry-val" id="valPackets">0</span> pkt/s</div>
-  </div>
+    <!-- Ombros / Gatilhos Superiores (L1 e R1) -->
+    <header class="shoulders">
+      <button class="bumper-btn bumper-left" id="btnL1" title="Freio de Emergência (Tecla X)">
+        <span class="bumper-tag">L1</span>
+        <span>Freio</span>
+      </button>
 
-  <!-- Arena de Controle -->
-  <div class="arena-panel">
-
-    <!-- Joystick 360° -->
-    <div class="joystick-zone">
-      <div class="joystick-base" id="joystickBase">
-        <div class="joystick-thumb" id="joystickThumb"></div>
-      </div>
-      <div class="joystick-label">Joystick Analógico 360°</div>
-    </div>
-
-    <!-- Painel de Ações Táticas -->
-    <div class="tactical-zone">
-      <!-- Limitador de Velocidade -->
-      <div class="slider-box">
-        <div class="slider-header">
-          <span>TETO DE POTÊNCIA</span>
-          <span id="speedLimitLabel">100%</span>
+      <div class="top-center">
+        <div class="ble-status" id="statusBadge">
+          <span class="status-led"></span>
+          <span id="statusText">micro:bit V2</span>
         </div>
-        <input type="range" id="speedLimit" min="40" max="100" value="100" oninput="updateSpeedLimit(this.value)">
+        <button class="btn-pair" id="btnConnect" onclick="toggleConnect()">Conectar</button>
       </div>
 
-      <!-- Turbo -->
-      <button class="btn-tactical btn-turbo" id="btnTurbo" 
-              ontouchstart="startTurbo(event)" ontouchend="stopTurbo(event)" 
-              onmousedown="startTurbo(event)" onmouseup="stopTurbo(event)">
-        ⚡ ATAQUE TURBO (100%)
+      <button class="bumper-btn bumper-right" id="btnR1" title="Turbo 100% (Espaço)">
+        <span>Turbo</span>
+        <span class="bumper-tag">R1</span>
       </button>
+    </header>
 
-      <!-- Giro 180° -->
-      <button class="btn-tactical btn-t180" onclick="sendSpin180()">
-        🔄 GIRO TÁTICO 180°
-      </button>
+    <!-- Corpo Principal do Controle -->
+    <section class="controller-body">
 
-      <!-- Gatilho da Arma -->
-      <button class="btn-tactical btn-weapon" id="btnWeapon" onclick="toggleWeapon()">
-        ⚔️ ARMA ATIVA (P16): OFF
-      </button>
+      <!-- LADO ESQUERDO: ANALÓGICO 360° OU D-PAD -->
+      <div class="pod-left">
+        <!-- Stick Analógico -->
+        <div class="stick-well" id="joystickBase">
+          <div class="stick-ring"></div>
+          <div class="stick-cap" id="joystickThumb"></div>
+        </div>
 
-      <!-- Botão Parada Emergencial -->
-      <button class="btn-stop" onclick="sendEmergencyStop()">
-        PARADA DE EMERGÊNCIA (STOP)
-      </button>
-    </div>
+        <!-- D-Pad em Cruz -->
+        <div class="dpad-well hidden" id="dpadBase">
+          <button class="dpad-btn dpad-up" data-dir="F" aria-label="Frente">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 6l-7 9h14z"/></svg>
+          </button>
+          <button class="dpad-btn dpad-left" data-dir="L" aria-label="Esquerda">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M6 12l9-7v14z"/></svg>
+          </button>
+          <div class="dpad-core"></div>
+          <button class="dpad-btn dpad-right" data-dir="R" aria-label="Direita">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M18 12l-9-7v14z"/></svg>
+          </button>
+          <button class="dpad-btn dpad-down" data-dir="B" aria-label="Ré">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 18l7-9H5z"/></svg>
+          </button>
+        </div>
+      </div>
 
-  </div>
+      <!-- CONSOLE CENTRAL: MINI VISOR OLED + POTÊNCIA + SELETOR DE MODO -->
+      <div class="center-hub">
+        <div class="oled-screen">
+          <div class="oled-title">
+            <span>Telemetria</span>
+            <span class="oled-pkt"><span id="valPackets">0</span> pkt/s</span>
+          </div>
+          <div class="motor-meters">
+            <div class="meter-row">
+              <span class="meter-lbl">M1</span>
+              <div class="meter-track"><div class="meter-fill" id="barL"></div></div>
+              <span class="meter-val" id="valL">0%</span>
+            </div>
+            <div class="meter-row">
+              <span class="meter-lbl">M2</span>
+              <div class="meter-track"><div class="meter-fill" id="barR"></div></div>
+              <span class="meter-val" id="valR">0%</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="power-cap">
+          <div class="power-cap-top">
+            <span>Potência</span>
+            <span id="speedLimitLabel">100%</span>
+          </div>
+          <input type="range" id="speedLimit" min="40" max="100" step="5" value="100" oninput="updateSpeedLimit(this.value)">
+        </div>
+
+        <div class="mode-switch" role="group" aria-label="Modo de Direção">
+          <button class="mode-opt active" id="modeStick" onclick="setDriveMode('stick')">Stick</button>
+          <button class="mode-opt" id="modeDpad" onclick="setDriveMode('dpad')">D-Pad</button>
+        </div>
+      </div>
+
+      <!-- LADO DIREITO: BOTÕES TÁTICOS EM DIAMANTE -->
+      <div class="pod-right">
+        <div class="diamond-pad">
+          <!-- Topo: Turbo -->
+          <button class="face-btn btn-top btn-turbo-face" id="btnTurboFace" title="Segurar para Turbo 100%">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+            </svg>
+            <span>Turbo</span>
+          </button>
+
+          <!-- Esquerda: Giro 180° -->
+          <button class="face-btn btn-left btn-spin-face" id="btnSpinFace" title="Giro Rápido 180° (Tecla Q)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 12a9 9 0 1 1-3-6.7L21 8"/>
+              <path d="M21 3v5h-5"/>
+            </svg>
+            <span>180°</span>
+          </button>
+
+          <!-- Direita: Arma P16 -->
+          <button class="face-btn btn-right btn-weapon-face" id="btnWeapon" title="Ligar/Desligar Arma P16 (Tecla E)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="8"/>
+              <line x1="12" y1="2" x2="12" y2="6"/>
+              <line x1="12" y1="18" x2="12" y2="22"/>
+              <line x1="2" y1="12" x2="6" y2="12"/>
+              <line x1="18" y1="12" x2="22" y2="12"/>
+            </svg>
+            <span id="weaponLabel">Arma</span>
+          </button>
+
+          <!-- Baixo: Parada de Emergência -->
+          <button class="face-btn btn-bottom btn-stop-face" id="btnStopFace" title="Parada Imediata (Tecla X)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="6" y="6" width="12" height="12" rx="2"/>
+            </svg>
+            <span>Stop</span>
+          </button>
+        </div>
+      </div>
+
+    </section>
+  </main>
 
   <script>
     // ==========================================================
     // CONFIGURAÇÕES BLUETOOTH LOW ENERGY (NORDIC UART SERVICE)
     // ==========================================================
     const NUS_SERVICE_UUID = '6e400001-b5a3-f393-e0a9-e50e24dcca9e';
-    const NUS_RX_CHAR_UUID = '6e400003-b5a3-f393-e0a9-e50e24dcca9e'; // Phone to micro:bit
+    const NUS_RX_CHAR_UUID = '6e400003-b5a3-f393-e0a9-e50e24dcca9e';
 
     let bleDevice = null;
     let rxCharacteristic = null;
@@ -333,12 +890,21 @@
     let speedLimit = 1.0;
     let weaponActive = false;
     let packetCount = 0;
-    let lastPacketTime = Date.now();
+
+    // Fila simples não-bloqueante para evitar erro "GATT operation already in progress"
+    let bleWriting = false;
+    let queuedCmd = null;
+    const textEncoder = new TextEncoder();
+
+    function haptic(ms = 12) {
+      if (navigator.vibrate) navigator.vibrate(ms);
+    }
 
     // ==========================================================
     // CONEXÃO WEB BLUETOOTH
     // ==========================================================
-    async function toggleConnect() {
+    function toggleConnect() {
+      haptic(15);
       if (isConnected) {
         disconnectBLE();
       } else {
@@ -348,34 +914,33 @@
 
     async function connectBLE() {
       if (!navigator.bluetooth) {
-        alert("Web Bluetooth não é suportado neste navegador!\n\nNo Android: Use Google Chrome ou Samsung Internet.\nNo iOS: Use o navegador 'Bluefy' da App Store.\nNo PC/Mac: Use Google Chrome ou Edge.");
+        alert("Web Bluetooth não é suportado neste navegador.\n\n• Android: Google Chrome ou Samsung Internet\n• iOS: Navegador Bluefy\n• PC: Google Chrome ou Edge");
         return;
       }
 
       try {
-        updateStatus("Procurando...", false);
+        updateStatus("Buscando...", "searching");
         bleDevice = await navigator.bluetooth.requestDevice({
-          filters: [
-            { namePrefix: 'BBC micro:bit' }
-          ],
+          filters: [{ namePrefix: 'BBC micro:bit' }],
           optionalServices: [NUS_SERVICE_UUID]
         });
 
         bleDevice.addEventListener('gattserverdisconnected', onDisconnected);
 
-        updateStatus("Conectando...", false);
+        updateStatus("Pareando...", "searching");
         const server = await bleDevice.gatt.connect();
         const service = await server.getPrimaryService(NUS_SERVICE_UUID);
         rxCharacteristic = await service.getCharacteristic(NUS_RX_CHAR_UUID);
 
         isConnected = true;
-        updateStatus("Conectado!", true);
-        document.getElementById('btnConnect').innerText = "DESCONECTAR";
-        document.getElementById('btnConnect').classList.add('connected');
+        updateStatus("Conectado", "connected");
+        const btn = document.getElementById('btnConnect');
+        btn.innerText = "Sair";
+        btn.classList.add('connected');
+        haptic([15, 30, 20]);
       } catch (err) {
         console.error("Erro BLE:", err);
-        updateStatus("Falha ao Conectar", false);
-        setTimeout(() => updateStatus("Desconectado", false), 2000);
+        updateStatus("Desconectado", "idle");
       }
     }
 
@@ -389,73 +954,135 @@
     function onDisconnected() {
       isConnected = false;
       rxCharacteristic = null;
-      updateStatus("Desconectado", false);
-      document.getElementById('btnConnect').innerText = "CONECTAR";
-      document.getElementById('btnConnect').classList.remove('connected');
-      resetMotorsTelemetry();
+      bleWriting = false;
+      queuedCmd = null;
+      updateStatus("micro:bit V2", "idle");
+      const btn = document.getElementById('btnConnect');
+      btn.innerText = "Conectar";
+      btn.classList.remove('connected');
+      updateMotorTelemetry(0, 0);
     }
 
-    function updateStatus(text, connected) {
+    function updateStatus(text, state) {
       document.getElementById('statusText').innerText = text;
       const badge = document.getElementById('statusBadge');
-      if (connected) {
-        badge.classList.add('connected');
-      } else {
-        badge.classList.remove('connected');
-      }
+      badge.classList.remove('connected', 'searching');
+      if (state === 'connected') badge.classList.add('connected');
+      if (state === 'searching') badge.classList.add('searching');
     }
 
     // ==========================================================
-    // TRANSMISSÃO DE COMANDOS VIA BLE
+    // TRANSMISSÃO SEGURA DE COMANDOS BLE
     // ==========================================================
-    async function sendCommand(cmd) {
+    async function sendCommand(cmd, priority = false) {
       if (!isConnected || !rxCharacteristic) return;
 
+      if (bleWriting) {
+        if (priority || !queuedCmd) {
+          queuedCmd = cmd;
+        } else if (!queuedCmd.startsWith("S") && !queuedCmd.startsWith("ARMA")) {
+          queuedCmd = cmd;
+        }
+        return;
+      }
+
+      bleWriting = true;
       try {
-        const encoder = new TextEncoder();
-        const data = encoder.encode(cmd + "\n");
+        const data = textEncoder.encode(cmd + "\n");
         await rxCharacteristic.writeValueWithoutResponse(data);
         packetCount++;
       } catch (e) {
-        // Se a escrita falhar, tenta envio seguro com resposta
         try {
-          const encoder = new TextEncoder();
-          await rxCharacteristic.writeValue(encoder.encode(cmd + "\n"));
+          await rxCharacteristic.writeValue(textEncoder.encode(cmd + "\n"));
           packetCount++;
         } catch (err) {
-          console.warn("Erro no envio:", err);
+          console.warn("Erro BLE:", err);
+        }
+      } finally {
+        bleWriting = false;
+        if (queuedCmd !== null) {
+          const next = queuedCmd;
+          queuedCmd = null;
+          sendCommand(next);
         }
       }
     }
 
     // ==========================================================
-    // JOYSTICK ANALÓGICO VIRTUAL 360°
+    // TELEMETRIA OLED
+    // ==========================================================
+    function updateMotorTelemetry(left1023, right1023) {
+      const pctL = Math.round((left1023 / 1023) * 100);
+      const pctR = Math.round((right1023 / 1023) * 100);
+
+      document.getElementById('valL').innerText = pctL + "%";
+      document.getElementById('valR').innerText = pctR + "%";
+
+      const barL = document.getElementById('barL');
+      const barR = document.getElementById('barR');
+      barL.style.width = Math.min(100, Math.abs(pctL)) + "%";
+      barR.style.width = Math.min(100, Math.abs(pctR)) + "%";
+      barL.classList.toggle('reverse', pctL < 0);
+      barR.classList.toggle('reverse', pctR < 0);
+    }
+
+    // ==========================================================
+    // SELETOR DE MODO (STICK / D-PAD)
+    // ==========================================================
+    let driveMode = 'stick';
+    function setDriveMode(mode) {
+      haptic(10);
+      driveMode = mode;
+      releaseJoystick();
+      stopDpad();
+
+      document.getElementById('modeStick').classList.toggle('active', mode === 'stick');
+      document.getElementById('modeDpad').classList.toggle('active', mode === 'dpad');
+      document.getElementById('joystickBase').classList.toggle('hidden', mode !== 'stick');
+      document.getElementById('dpadBase').classList.toggle('hidden', mode !== 'dpad');
+    }
+
+    // ==========================================================
+    // JOYSTICK ANALÓGICO 360° (MULTI-TOUCH SAFE)
     // ==========================================================
     const base = document.getElementById('joystickBase');
     const thumb = document.getElementById('joystickThumb');
-    let joystickActive = false;
+    let joystickPointerId = null;
     let joystickTimer = null;
     let targetLeft = 0;
     let targetRight = 0;
+    let turboHeld = false;
 
     base.addEventListener('pointerdown', (e) => {
-      joystickActive = true;
+      if (joystickPointerId !== null) return;
+      e.preventDefault();
+      joystickPointerId = e.pointerId;
       base.setPointerCapture(e.pointerId);
+      base.classList.add('active');
+      haptic(8);
       handleJoystick(e);
       if (!joystickTimer) {
-        joystickTimer = setInterval(sendDrivePacket, 40); // 25 FPS
+        joystickTimer = setInterval(sendDrivePacket, 45);
       }
     });
 
     base.addEventListener('pointermove', (e) => {
-      if (joystickActive) handleJoystick(e);
+      if (e.pointerId === joystickPointerId) {
+        handleJoystick(e);
+      }
     });
 
-    base.addEventListener('pointerup', releaseJoystick);
-    base.addEventListener('pointercancel', releaseJoystick);
+    base.addEventListener('pointerup', (e) => {
+      if (e.pointerId === joystickPointerId) releaseJoystick();
+    });
+    base.addEventListener('pointercancel', (e) => {
+      if (e.pointerId === joystickPointerId) releaseJoystick();
+    });
 
     function releaseJoystick() {
-      joystickActive = false;
+      const wasActive = joystickPointerId !== null;
+      joystickPointerId = null;
+      base.classList.remove('active');
       if (joystickTimer) {
         clearInterval(joystickTimer);
         joystickTimer = null;
@@ -463,15 +1090,17 @@
       thumb.style.transform = `translate(0px, 0px)`;
       targetLeft = 0;
       targetRight = 0;
-      sendCommand("S");
-      resetMotorsTelemetry();
+      if (wasActive && !turboHeld) {
+        sendCommand("S", true);
+        updateMotorTelemetry(0, 0);
+      }
     }
 
     function handleJoystick(e) {
       const rect = base.getBoundingClientRect();
       const centerX = rect.left + rect.width / 2;
       const centerY = rect.top + rect.height / 2;
-      const maxRadius = rect.width / 2 - 25;
+      const maxRadius = rect.width / 2 - (thumb.offsetWidth / 2) + 8;
 
       let dx = e.clientX - centerX;
       let dy = e.clientY - centerY;
@@ -485,12 +1114,9 @@
 
       thumb.style.transform = `translate(${dx}px, ${dy}px)`;
 
-      // Normaliza de -1.0 a +1.0
-      // dy invertido: empurrar para cima é avanço positivo
       const normX = dx / maxRadius;
       const normY = -dy / maxRadius;
 
-      // Arcade Drive Mixing
       let left = normY + normX;
       let right = normY - normX;
 
@@ -503,59 +1129,181 @@
       targetLeft = Math.round(left * 1023 * speedLimit);
       targetRight = Math.round(right * 1023 * speedLimit);
 
-      document.getElementById('valL').innerText = Math.round((targetLeft / 1023) * 100) + "%";
-      document.getElementById('valR').innerText = Math.round((targetRight / 1023) * 100) + "%";
+      if (!turboHeld) {
+        updateMotorTelemetry(targetLeft, targetRight);
+      }
     }
 
     function sendDrivePacket() {
-      if (joystickActive) {
+      if (joystickPointerId !== null && !turboHeld) {
         sendCommand(`D:${targetLeft},${targetRight}`);
       }
     }
 
-    function resetMotorsTelemetry() {
-      document.getElementById('valL').innerText = "0%";
-      document.getElementById('valR').innerText = "0%";
-    }
-
     // ==========================================================
-    // AÇÕES TÁTICAS
+    // D-PAD EM CRUZ (ENVIO CONTÍNUO ANTI-WATCHDOG)
     // ==========================================================
-    function startTurbo(e) {
-      if (e) e.preventDefault();
-      sendCommand("TURBO");
-      document.getElementById('valL').innerText = "100%";
-      document.getElementById('valR').innerText = "100%";
+    let activeDpadBtn = null;
+    let dpadTimer = null;
+
+    document.querySelectorAll('.dpad-btn').forEach((btn) => {
+      btn.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        stopDpad();
+        btn.setPointerCapture(e.pointerId);
+        activeDpadBtn = btn;
+        btn.classList.add('pressed');
+        haptic(10);
+        sendDpadStep();
+        dpadTimer = setInterval(sendDpadStep, 90);
+      });
+
+      const endFn = () => {
+        if (activeDpadBtn === btn) stopDpad(true);
+      };
+      btn.addEventListener('pointerup', endFn);
+      btn.addEventListener('pointercancel', endFn);
+    });
+
+    function getDpadMotors(dir) {
+      const pwr = Math.round(1023 * speedLimit);
+      if (dir === 'F') return [pwr, pwr];
+      if (dir === 'B') return [-pwr, -pwr];
+      if (dir === 'L') return [-Math.round(pwr * 0.9), Math.round(pwr * 0.9)];
+      if (dir === 'R') return [Math.round(pwr * 0.9), -Math.round(pwr * 0.9)];
+      return [0, 0];
     }
 
-    function stopTurbo(e) {
-      if (e) e.preventDefault();
-      sendCommand("S");
-      resetMotorsTelemetry();
+    function sendDpadStep() {
+      if (!activeDpadBtn || turboHeld) return;
+      const dir = activeDpadBtn.dataset.dir;
+      const [l, r] = getDpadMotors(dir);
+      sendCommand(`D:${l},${r}`);
+      updateMotorTelemetry(l, r);
     }
 
-    function sendSpin180() {
-      sendCommand("T180");
-    }
-
-    function toggleWeapon() {
-      weaponActive = !weaponActive;
-      const btn = document.getElementById('btnWeapon');
-      if (weaponActive) {
-        btn.classList.add('active');
-        btn.innerText = "⚔️ ARMA ATIVA (P16): ON";
-        sendCommand("ARMA_ON");
-      } else {
-        btn.classList.remove('active');
-        btn.innerText = "⚔️ ARMA ATIVA (P16): OFF";
-        sendCommand("ARMA_OFF");
+    function stopDpad(sendStop = false) {
+      if (dpadTimer) {
+        clearInterval(dpadTimer);
+        dpadTimer = null;
+      }
+      if (activeDpadBtn) {
+        activeDpadBtn.classList.remove('pressed');
+        activeDpadBtn = null;
+      }
+      if (sendStop && !turboHeld) {
+        sendCommand("S", true);
+        updateMotorTelemetry(0, 0);
       }
     }
 
+    // ==========================================================
+    // BOTÕES TÁTICOS E GATILHOS L1 / R1 (MULTI-TOUCH)
+    // ==========================================================
+    let turboTimer = null;
+    const turboButtons = [document.getElementById('btnR1'), document.getElementById('btnTurboFace')];
+
+    function startTurbo(el) {
+      if (turboHeld) return;
+      turboHeld = true;
+      el.classList.add('pressed');
+      haptic(16);
+      sendCommand("TURBO", true);
+      updateMotorTelemetry(1023, 1023);
+      if (!turboTimer) {
+        turboTimer = setInterval(() => {
+          if (turboHeld) sendCommand("TURBO");
+        }, 120);
+      }
+    }
+
+    function stopTurbo(el) {
+      if (!turboHeld) return;
+      turboHeld = false;
+      turboButtons.forEach(b => b.classList.remove('pressed'));
+      if (turboTimer) {
+        clearInterval(turboTimer);
+        turboTimer = null;
+      }
+      if (joystickPointerId !== null) {
+        sendCommand(`D:${targetLeft},${targetRight}`, true);
+        updateMotorTelemetry(targetLeft, targetRight);
+      } else if (activeDpadBtn) {
+        sendDpadStep();
+      } else {
+        sendCommand("S", true);
+        updateMotorTelemetry(0, 0);
+      }
+    }
+
+    turboButtons.forEach((btn) => {
+      btn.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        btn.setPointerCapture(e.pointerId);
+        startTurbo(btn);
+      });
+      btn.addEventListener('pointerup', () => stopTurbo(btn));
+      btn.addEventListener('pointercancel', () => stopTurbo(btn));
+    });
+
+    // Giro 180°
+    const spinBtn = document.getElementById('btnSpinFace');
+    spinBtn.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      spinBtn.classList.add('pressed');
+      haptic([12, 20, 12]);
+      sendCommand("T180", true);
+    });
+    const clearSpin = () => spinBtn.classList.remove('pressed');
+    spinBtn.addEventListener('pointerup', clearSpin);
+    spinBtn.addEventListener('pointercancel', clearSpin);
+
+    // Arma P16 Toggle
+    const weaponBtn = document.getElementById('btnWeapon');
+    weaponBtn.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      toggleWeapon();
+    });
+
+    function toggleWeapon() {
+      weaponActive = !weaponActive;
+      haptic(weaponActive ? [18, 25, 18] : 12);
+      weaponBtn.classList.toggle('active', weaponActive);
+      document.getElementById('weaponLabel').innerText = weaponActive ? "Arma ON" : "Arma";
+      sendCommand(weaponActive ? "ARMA_ON" : "ARMA_OFF", true);
+    }
+
+    // Parada de Emergência (L1 e Botão Stop)
+    const stopButtons = [document.getElementById('btnL1'), document.getElementById('btnStopFace')];
+    stopButtons.forEach((btn) => {
+      btn.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        btn.classList.add('pressed');
+        sendEmergencyStop();
+      });
+      const rel = () => btn.classList.remove('pressed');
+      btn.addEventListener('pointerup', rel);
+      btn.addEventListener('pointercancel', rel);
+    });
+
     function sendEmergencyStop() {
-      sendCommand("S");
-      if (weaponActive) toggleWeapon();
+      haptic(25);
+      turboHeld = false;
+      if (turboTimer) {
+        clearInterval(turboTimer);
+        turboTimer = null;
+      }
+      turboButtons.forEach(b => b.classList.remove('pressed'));
       releaseJoystick();
+      stopDpad(false);
+      sendCommand("S", true);
+      if (weaponActive) {
+        weaponActive = false;
+        weaponBtn.classList.remove('active');
+        document.getElementById('weaponLabel').innerText = "Arma";
+        sendCommand("ARMA_OFF", true);
+      }
+      updateMotorTelemetry(0, 0);
     }
 
     function updateSpeedLimit(val) {
@@ -563,7 +1311,70 @@
       document.getElementById('speedLimitLabel').innerText = val + "%";
     }
 
-    // Monitor de taxa de pacotes
+    // ==========================================================
+    // SUPORTE DE TECLADO PARA TESTES NO PC
+    // ==========================================================
+    const keysDown = new Set();
+    let kbTimer = null;
+
+    function processKeyboardDrive() {
+      if (turboHeld || joystickPointerId !== null || activeDpadBtn) return;
+      let y = 0, x = 0;
+      if (keysDown.has('KeyW') || keysDown.has('ArrowUp')) y += 1;
+      if (keysDown.has('KeyS') || keysDown.has('ArrowDown')) y -= 1;
+      if (keysDown.has('KeyA') || keysDown.has('ArrowLeft')) x -= 1;
+      if (keysDown.has('KeyD') || keysDown.has('ArrowRight')) x += 1;
+
+      if (x === 0 && y === 0) {
+        if (kbTimer) {
+          clearInterval(kbTimer);
+          kbTimer = null;
+          sendCommand("S", true);
+          updateMotorTelemetry(0, 0);
+        }
+        return;
+      }
+
+      let left = y + x;
+      let right = y - x;
+      const m = Math.max(Math.abs(left), Math.abs(right));
+      if (m > 1) { left /= m; right /= m; }
+      const pL = Math.round(left * 1023 * speedLimit);
+      const pR = Math.round(right * 1023 * speedLimit);
+      sendCommand(`D:${pL},${pR}`);
+      updateMotorTelemetry(pL, pR);
+    }
+
+    window.addEventListener('keydown', (e) => {
+      if (e.repeat) return;
+      if (e.code === 'Space') {
+        e.preventDefault();
+        startTurbo(document.getElementById('btnR1'));
+      } else if (e.code === 'KeyE') {
+        toggleWeapon();
+      } else if (e.code === 'KeyQ') {
+        spinBtn.classList.add('pressed');
+        sendCommand("T180", true);
+      } else if (e.code === 'KeyX' || e.code === 'Escape') {
+        sendEmergencyStop();
+      } else if (['KeyW','KeyA','KeyS','KeyD','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code)) {
+        keysDown.add(e.code);
+        processKeyboardDrive();
+        if (!kbTimer) kbTimer = setInterval(processKeyboardDrive, 80);
+      }
+    });
+
+    window.addEventListener('keyup', (e) => {
+      if (e.code === 'Space') {
+        stopTurbo(document.getElementById('btnR1'));
+      } else if (e.code === 'KeyQ') {
+        spinBtn.classList.remove('pressed');
+      } else if (keysDown.delete(e.code)) {
+        processKeyboardDrive();
+      }
+    });
+
+    // Monitor de taxa de pacotes (pkt/s)
     setInterval(() => {
       document.getElementById('valPackets').innerText = packetCount;
       packetCount = 0;
